@@ -12,7 +12,8 @@ module ModernSearchlogic
 
         searchlogic_equals_match(method) ||
           searchlogic_does_not_equal_match(method) ||
-          searchlogic_like_match(method)
+          searchlogic_like_match(method) ||
+          searchlogic_not_like_match(method)
       end
 
       def column_names_regexp
@@ -34,6 +35,12 @@ module ModernSearchlogic
       def searchlogic_like_match(method_name)
         if match = method_name.match(/\A(#{column_names_regexp})_like\z/)
           lambda { |val| where(arel_table[match[1]].matches("%#{val}%")) }
+        end
+      end
+
+      def searchlogic_not_like_match(method_name)
+        if match = method_name.match(/\A(#{column_names_regexp})_not_like\z/)
+          lambda { |val| where(arel_table[match[1]].does_not_match("%#{val}%")) }
         end
       end
 
