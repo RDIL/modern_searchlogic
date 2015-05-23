@@ -32,6 +32,7 @@ module ModernSearchlogic
         searchlogic_arel_mapping_match(method) ||
           searchlogic_like_match(method) ||
           searchlogic_not_like_match(method) ||
+          searchlogic_null_match(method) ||
           searchlogic_presence_match(method)
       end
 
@@ -69,10 +70,23 @@ module ModernSearchlogic
         end
       end
 
-      def searchlogic_presence_match(method_name)
+      def searchlogic_null_match(method_name)
         if match = method_name.match(/\A(#{column_names_regexp})_((?:not_)?(?:null|nil))\z/)
           matcher = match[2].starts_with?('not_') ? :not_eq : :eq
           lambda { where(arel_table[match[1]].__send__(matcher, nil)) }
+        end
+      end
+
+      def searchlogic_presence_match(method_name)
+        if match = method_name.match(/\A(#{column_names_regexp})_(blank|present)\z/)
+          arel_query =
+            if match[2] == 'blank'
+              arel_table[match[1]].eq(nil).or(arel_table[match[1]].eq(''))
+            else
+              arel_table[match[1]].not_eq(nil).and(arel_table[match[1]].not_eq(''))
+            end
+
+          lambda { where(arel_query) }
         end
       end
 

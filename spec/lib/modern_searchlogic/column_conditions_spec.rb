@@ -39,8 +39,24 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :age_less_than_or_equal_to, {:age => 17}, 19
     it_should_behave_like 'a column condition', :age_lte, {:age => 17}, 17
     it_should_behave_like 'a column condition', :username_not_null, {:username => 'Andrew'}
+    it_should_behave_like 'a column condition', :username_present, {:username => 'Andrew'}
+
+    context 'presence' do
+      before { User.create!(:username => nil) }
+      before { User.create!(:username => '') }
+      it_should_behave_like 'a column condition', :username_present, {:username => ' A'}
+    end
+
     it_should_behave_like 'a column condition', :username_not_nil, {:username => 'Andrew'}
     it_should_behave_like 'a column condition', :username_null, {}
+    it_should_behave_like 'a column condition', :username_blank, {}
+
+    context 'blank' do
+      before { User.create!(:username => ' ') }
+      before { User.create!(:username => 'A') }
+      it_should_behave_like 'a column condition', :username_blank, {:username => ''}
+    end
+
     it_should_behave_like 'a column condition', :username_nil, {}
     it_should_behave_like 'a column condition', :username_in, {:username => 'Andrew'}, ['Andrew', 'Warner', 'William']
     it_should_behave_like 'a column condition', :username_eq_any, {:username => 'Andrew'}, ['Andrew', 'Warner', 'William']
