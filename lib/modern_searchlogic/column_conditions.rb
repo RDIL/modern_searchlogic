@@ -13,7 +13,8 @@ module ModernSearchlogic
         :greater_than_or_equal_to => :gteq,
         :gte => :gteq,
         :less_than_or_equal_to => :lteq,
-        :lte => :lteq
+        :lte => :lteq,
+        :in => :in
       }
 
       def respond_to_missing?(method, *)
