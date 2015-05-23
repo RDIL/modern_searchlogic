@@ -27,7 +27,13 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_not_like, {:username => 'Andrew Renraw'}, 'warn'
     it_should_behave_like 'a column condition', :age_greater_than, {:age => 17}, 16
     it_should_behave_like 'a column condition', :age_gt, {:age => 17}, 16
+    it_should_behave_like 'a column condition', :age_greater_than_or_equal_to, {:age => 17}, 17
+    it_should_behave_like 'a column condition', :age_greater_than_or_equal_to, {:age => 17}, 16
+    it_should_behave_like 'a column condition', :age_gte, {:age => 17}, 17
     it_should_behave_like 'a column condition', :age_less_than, {:age => 17}, 19
     it_should_behave_like 'a column condition', :age_lt, {:age => 17}, 19
+    it_should_behave_like 'a column condition', :age_less_than_or_equal_to, {:age => 17}, 17
+    it_should_behave_like 'a column condition', :age_less_than_or_equal_to, {:age => 17}, 19
+    it_should_behave_like 'a column condition', :age_lte, {:age => 17}, 17
   end
 end
