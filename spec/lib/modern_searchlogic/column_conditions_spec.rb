@@ -66,4 +66,18 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_not_in, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
     it_should_behave_like 'a column condition', :username_not_eq_any, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
   end
+
+  context 'chaining' do
+    let!(:user) { User.create!(:username => 'William Andrew Warner', :age => 28) }
+
+    before do
+      User.create!(:username => 'Jane Smith', :age => 23)
+      User.create!(:username => 'John Smith', :age => 24)
+      User.create!(:username => 'Jorah Mormont', :age => 51)
+    end
+
+    specify 'chaining scopes should work' do
+      User.age_gt(25).username_like('andr').first.should == user
+    end
+  end
 end
