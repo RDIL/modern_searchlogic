@@ -1,0 +1,8 @@
+.bundle/
+log/*.log
+pkg/
+spec/app/db/*.sqlite3
+spec/app/db/*.sqlite3-journal
+spec/app/log/*.log
+spec/app/tmp/
+spec/app/.sass-cache
