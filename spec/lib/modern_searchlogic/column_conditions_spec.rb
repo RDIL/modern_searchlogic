@@ -11,6 +11,11 @@ describe ModernSearchlogic::ColumnConditions do
     specify "#{finder_method} returns the expected user" do
       User.__send__(finder_method, find_by).first.should == user
     end
+
+    specify "#{finder_method} should get defined by calling it" do
+      User.__send__(finder_method, find_by)
+      User.public_method(finder_method).should_not be_nil
+    end
   end
 
   context 'column_equals methods' do
@@ -20,5 +25,9 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_ne, {:username => 'NotAndrew'}, 'Andrew'
     it_should_behave_like 'a column condition', :username_like, {:username => 'Andrew Warner'}, 'warn'
     it_should_behave_like 'a column condition', :username_not_like, {:username => 'Andrew Renraw'}, 'warn'
+    it_should_behave_like 'a column condition', :age_greater_than, {:age => 17}, 16
+    it_should_behave_like 'a column condition', :age_gt, {:age => 17}, 16
+    it_should_behave_like 'a column condition', :age_less_than, {:age => 17}, 19
+    it_should_behave_like 'a column condition', :age_lt, {:age => 17}, 19
   end
 end

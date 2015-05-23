@@ -5,7 +5,11 @@ module ModernSearchlogic
         :equals => :eq,
         :eq => :eq,
         :does_not_equal => :not_eq,
-        :ne => :not_eq
+        :ne => :not_eq,
+        :greater_than => :gt,
+        :gt => :gt,
+        :less_than => :lt,
+        :lt => :lt
       }
 
       def respond_to_missing?(method, *)
