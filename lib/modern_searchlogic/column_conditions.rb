@@ -12,7 +12,7 @@ module ModernSearchlogic
       end
 
       def searchlogic_equals_match(method_name)
-        method_name.match(/\A(#{column_names_regexp})_equals\z/)
+        method_name.match(/\A(#{column_names_regexp})_(equals|eq)\z/)
       end
 
       def method_missing(method, *args, &block)
