@@ -1,19 +1,20 @@
 require 'rails_helper'
 
 describe ModernSearchlogic::ColumnConditions do
-  shared_examples 'a column condition' do |finder_method, user_attributes, find_by|
+  shared_examples 'a column condition' do |*args|
+    finder_method, user_attributes, find_by = *args
     let!(:user) { User.create!(user_attributes) }
 
     specify "#{finder_method} returns a countable scope" do
-      User.__send__(finder_method, find_by).count.should == 1
+      User.__send__(*[finder_method, find_by].compact).count.should == 1
     end
 
     specify "#{finder_method} returns the expected user" do
-      User.__send__(finder_method, find_by).first.should == user
+      User.__send__(*[finder_method, find_by].compact).first.should == user
     end
 
     specify "#{finder_method} should get defined by calling it" do
-      User.__send__(finder_method, find_by)
+      User.__send__(*[finder_method, find_by].compact)
       User.public_method(finder_method).should_not be_nil
     end
   end
@@ -37,5 +38,9 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :age_less_than_or_equal_to, {:age => 17}, 17
     it_should_behave_like 'a column condition', :age_less_than_or_equal_to, {:age => 17}, 19
     it_should_behave_like 'a column condition', :age_lte, {:age => 17}, 17
+    it_should_behave_like 'a column condition', :username_not_null, {:username => 'Andrew'}
+    it_should_behave_like 'a column condition', :username_not_nil, {:username => 'Andrew'}
+    it_should_behave_like 'a column condition', :username_null, {}
+    it_should_behave_like 'a column condition', :username_nil, {}
   end
 end

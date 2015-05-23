@@ -27,7 +27,8 @@ module ModernSearchlogic
 
         searchlogic_arel_mapping_match(method) ||
           searchlogic_like_match(method) ||
-          searchlogic_not_like_match(method)
+          searchlogic_not_like_match(method) ||
+          searchlogic_presence_match(method)
       end
 
       def column_names_regexp
@@ -61,6 +62,13 @@ module ModernSearchlogic
             like_value = match[2] == 'not_like' ? "%#{val}%" : "#{val}%"
             where(arel_table[match[1]].does_not_match(like_value))
           end
+        end
+      end
+
+      def searchlogic_presence_match(method_name)
+        if match = method_name.match(/\A(#{column_names_regexp})_((?:not_)?(?:null|nil))\z/)
+          matcher = match[2].starts_with?('not_') ? :not_eq : :eq
+          lambda { where(arel_table[match[1]].__send__(matcher, nil)) }
         end
       end
 
