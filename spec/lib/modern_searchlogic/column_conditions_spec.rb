@@ -43,6 +43,8 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_null, {}
     it_should_behave_like 'a column condition', :username_nil, {}
     it_should_behave_like 'a column condition', :username_in, {:username => 'Andrew'}, ['Andrew', 'Warner', 'William']
+    it_should_behave_like 'a column condition', :username_eq_any, {:username => 'Andrew'}, ['Andrew', 'Warner', 'William']
     it_should_behave_like 'a column condition', :username_not_in, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
+    it_should_behave_like 'a column condition', :username_not_eq_any, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
   end
 end
