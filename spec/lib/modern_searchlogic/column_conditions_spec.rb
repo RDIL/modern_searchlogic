@@ -29,6 +29,8 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_not_like, {:username => 'Andrew Renraw'}, 'warn'
     it_should_behave_like 'a column condition', :username_begins_with, {:username => 'Andrew Warner'}, 'And'
     it_should_behave_like 'a column condition', :username_not_begin_with, {:username => 'Andrew Warner'}, 'ndr'
+    it_should_behave_like 'a column condition', :username_ends_with, {:username => 'Andrew Warner'}, 'rner'
+    it_should_behave_like 'a column condition', :username_not_end_with, {:username => 'Andrew Warner'}, 'arne'
     it_should_behave_like 'a column condition', :age_greater_than, {:age => 17}, 16
     it_should_behave_like 'a column condition', :age_gt, {:age => 17}, 16
     it_should_behave_like 'a column condition', :age_greater_than_or_equal_to, {:age => 17}, 17

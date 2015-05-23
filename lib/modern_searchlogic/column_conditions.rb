@@ -53,18 +53,36 @@ module ModernSearchlogic
       end
 
       def searchlogic_like_match(method_name)
-        if match = method_name.match(/\A(#{column_names_regexp})_(begins_with|like)\z/)
+        if match = method_name.match(/\A(#{column_names_regexp})_(ends_with|begins_with|like)\z/)
           lambda do |val|
-            like_value = match[2] == 'like' ? "%#{val}%" : "#{val}%"
+            like_value =
+              case match[2]
+              when 'like'
+                "%#{val}%"
+              when 'begins_with'
+                "#{val}%"
+              when 'ends_with'
+                "%#{val}"
+              end
+
             where(arel_table[match[1]].matches(like_value))
           end
         end
       end
 
       def searchlogic_not_like_match(method_name)
-        if match = method_name.match(/\A(#{column_names_regexp})_(not_begin_with|not_like)\z/)
+        if match = method_name.match(/\A(#{column_names_regexp})_(not_end_with|not_begin_with|not_like)\z/)
           lambda do |val|
-            like_value = match[2] == 'not_like' ? "%#{val}%" : "#{val}%"
+            like_value =
+              case match[2]
+              when 'not_like'
+                "%#{val}%"
+              when 'not_begin_with'
+                "#{val}%"
+              when 'not_end_with'
+                "%#{val}"
+              end
+
             where(arel_table[match[1]].does_not_match(like_value))
           end
         end
