@@ -15,7 +15,8 @@ describe ModernSearchlogic::ColumnConditions do
 
     specify "#{finder_method} should get defined by calling it" do
       User.__send__(*[finder_method, find_by].compact)
-      User.public_method(finder_method).should_not be_nil
+      User.methods.should include finder_method
+      Post.methods.should_not include finder_method
     end
   end
 
