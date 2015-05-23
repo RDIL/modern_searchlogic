@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe ModernSearchlogic::ColumnConditions do
-  shared_examples 'a column condition' do |finder_method|
+  shared_examples 'a column condition' do |finder_method, user_attributes, find_by|
     let!(:user) { User.create!(user_attributes) }
 
     specify "#{finder_method} returns a countable scope" do
@@ -14,10 +14,9 @@ describe ModernSearchlogic::ColumnConditions do
   end
 
   context 'column_equals methods' do
-    let(:user_attributes) { {:username => 'Andrew'} }
-    let(:find_by) { 'Andrew' }
-
-    it_should_behave_like 'a column condition', :username_equals
-    it_should_behave_like 'a column condition', :username_eq
+    it_should_behave_like 'a column condition', :username_equals, {:username => 'Andrew'}, 'Andrew'
+    it_should_behave_like 'a column condition', :username_eq, {:username => 'Andrew'}, 'Andrew'
+    it_should_behave_like 'a column condition', :username_does_not_equal, {:username => 'NotAndrew'}, 'Andrew'
+    it_should_behave_like 'a column condition', :username_ne, {:username => 'NotAndrew'}, 'Andrew'
   end
 end
