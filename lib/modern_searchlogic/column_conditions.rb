@@ -1,25 +1,6 @@
 module ModernSearchlogic
   module ColumnConditions
     module ClassMethods
-      SEARCHLOGIC_TO_AREL_MAPPING = {
-        :equals => :eq,
-        :eq => :eq,
-        :does_not_equal => :not_eq,
-        :ne => :not_eq,
-        :greater_than => :gt,
-        :gt => :gt,
-        :less_than => :lt,
-        :lt => :lt,
-        :greater_than_or_equal_to => :gteq,
-        :gte => :gteq,
-        :less_than_or_equal_to => :lteq,
-        :lte => :lteq,
-        :in => :in,
-        :eq_any => :in,
-        :not_in => :not_in,
-        :not_eq_any => :not_in,
-      }
-
       def respond_to_missing?(method, *)
         super || !!searchlogic_column_condition_method_block(method.to_s)
       end
@@ -30,6 +11,10 @@ module ModernSearchlogic
 
       def searchlogic_column_prefix(prefix, &method_block)
         searchlogic_column_prefixes << [prefix, method_block]
+      end
+
+      def searchlogic_arel_alias(searchlogic_suffix, arel_method)
+        searchlogic_to_arel_mappings[searchlogic_suffix] = arel_method
       end
 
       private
@@ -62,10 +47,10 @@ module ModernSearchlogic
       end
 
       def searchlogic_arel_mapping_match(method_name)
-        searchlogic_matcher_re = SEARCHLOGIC_TO_AREL_MAPPING.keys.join('|')
+        searchlogic_matcher_re = searchlogic_to_arel_mappings.keys.join('|')
 
         if match = method_name.match(/\A(#{column_names_regexp})_(#{searchlogic_matcher_re})\z/)
-          arel_matcher = SEARCHLOGIC_TO_AREL_MAPPING.fetch(match[2].to_sym)
+          arel_matcher = searchlogic_to_arel_mappings.fetch(match[2].to_sym)
 
           lambda do |val|
             where(arel_table[match[1]].__send__(arel_matcher, val))
@@ -91,6 +76,26 @@ module ModernSearchlogic
 
         class_attribute :searchlogic_column_prefixes
         base.searchlogic_column_prefixes = []
+
+        class_attribute :searchlogic_to_arel_mappings
+        base.searchlogic_to_arel_mappings = {}
+
+        searchlogic_arel_alias :equals, :eq
+        searchlogic_arel_alias :eq, :eq
+        searchlogic_arel_alias :does_not_equal, :not_eq
+        searchlogic_arel_alias :ne, :not_eq
+        searchlogic_arel_alias :greater_than, :gt
+        searchlogic_arel_alias :gt, :gt
+        searchlogic_arel_alias :less_than, :lt
+        searchlogic_arel_alias :lt, :lt
+        searchlogic_arel_alias :greater_than_or_equal_to, :gteq
+        searchlogic_arel_alias :gte, :gteq
+        searchlogic_arel_alias :less_than_or_equal_to, :lteq
+        searchlogic_arel_alias :lte, :lteq
+        searchlogic_arel_alias :in, :in
+        searchlogic_arel_alias :eq_any, :in
+        searchlogic_arel_alias :not_in, :not_in
+        searchlogic_arel_alias :not_eq_any, :not_in
 
         searchlogic_column_suffix '_like' do |column_name, val|
           where(arel_table[column_name].matches("%#{val}%"))
