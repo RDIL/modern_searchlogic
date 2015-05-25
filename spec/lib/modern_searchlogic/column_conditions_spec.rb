@@ -46,8 +46,10 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_present, {:username => 'Andrew'}
 
     context 'presence' do
-      before { User.create!(:username => nil) }
-      before { User.create!(:username => '') }
+      before do
+        User.create!(:username => nil)
+        User.create!(:username => '')
+      end
       it_should_behave_like 'a column condition', :username_present, {:username => ' A'}
     end
 
@@ -56,8 +58,10 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_blank, {}
 
     context 'blank' do
-      before { User.create!(:username => ' ') }
-      before { User.create!(:username => 'A') }
+      before do
+        User.create!(:username => ' ')
+        User.create!(:username => 'A')
+      end
       it_should_behave_like 'a column condition', :username_blank, {:username => ''}
     end
 
