@@ -80,6 +80,7 @@ module ModernSearchlogic
 
         searchlogic_arel_alias :equals, :eq
         searchlogic_arel_alias :eq, :eq
+        searchlogic_arel_alias :is, :eq
         searchlogic_arel_alias :does_not_equal, :not_eq
         searchlogic_arel_alias :ne, :not_eq
         searchlogic_arel_alias :greater_than, :gt
