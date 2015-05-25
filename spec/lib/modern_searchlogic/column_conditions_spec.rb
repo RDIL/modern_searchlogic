@@ -18,6 +18,12 @@ describe ModernSearchlogic::ColumnConditions do
       User.methods.should include finder_method
       Post.methods.should_not include finder_method
     end
+
+    specify 'the wrong arity should raise an error' do
+      error_args = find_by ? [] : ['foobar']
+
+      expect { User.__send__(finder_method, *error_args) }.to raise_error ArgumentError
+    end
   end
 
   context 'column_equals methods' do
@@ -120,6 +126,10 @@ describe ModernSearchlogic::ColumnConditions do
 
     specify do
       User.posts_comments_body_like('great walk').first.should == dave
+    end
+
+    specify 'when association is not a scope should raise an exception' do
+      expect { User.posts_is_like }.to raise_error ArgumentError
     end
   end
 end

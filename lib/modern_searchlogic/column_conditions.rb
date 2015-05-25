@@ -22,7 +22,14 @@ module ModernSearchlogic
       def searchlogic_prefix_suffix_match(method_name)
         searchlogic_column_suffixes.each do |suffix, method_block|
           if match = method_name.match(/\A(#{column_names_regexp})#{suffix}\z/)
-            return lambda { |*args| instance_exec(match[1], *args, &method_block) }
+            return lambda do |*args|
+              expecting_num = method_block.arity - 1
+              unless args.length == expecting_num
+                raise ArgumentError, "wrong number of arguments (#{args.length} for #{expecting_num})"
+              end
+
+              instance_exec(match[1], *args, &method_block)
+            end
           end
         end
 
@@ -39,10 +46,13 @@ module ModernSearchlogic
         reflect_on_all_associations.each do |a|
           if method_name =~ /\A#{a.name}_(\S+)\z/ && a.klass.respond_to?($1)
             association_scope_name = $1
-            if ActiveRecord::Relation === a.klass.__send__(association_scope_name)
-              return lambda do |*args|
-                joins(a.name).merge(a.klass.__send__(association_scope_name, *args))
+            return lambda do |*args|
+              scope = a.klass.__send__(association_scope_name, *args)
+              unless ActiveRecord::Relation === scope
+                raise ArgumentError, "Expected #{association_scope_name.inspect} to return an ActiveRecord::Relation"
               end
+
+              joins(a.name).merge(scope)
             end
           end
         end
