@@ -98,4 +98,24 @@ describe ModernSearchlogic::ColumnConditions do
       User.age_gt(25).username_like('andr').first.should == user
     end
   end
+
+  context 'searching associations' do
+    let(:user) { User.create!(:username => 'Andrew') }
+    let(:dave) { User.create!(:username => 'Dave') }
+
+    before do
+      user.posts.create!(:title => 'Modernizing searchlogic in a jiffy')
+
+      daves_post = dave.posts.create!(:title => 'A lovely day')
+      daves_post.comments.create(:body => 'I had a great walk on the beach')
+    end
+
+    specify do
+      User.posts_title_like('searchlogic').first.should == user
+    end
+
+    specify do
+      User.posts_comments_body_like('great walk').first.should == dave
+    end
+  end
 end

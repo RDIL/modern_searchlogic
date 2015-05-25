@@ -35,9 +35,26 @@ module ModernSearchlogic
         nil
       end
 
+      def searchlogic_association_finder_match(method_name)
+        reflect_on_all_associations.each do |a|
+          if method_name =~ /\A#{a.name}_(\S+)\z/ && a.klass.respond_to?($1)
+            association_scope_name = $1
+            if ActiveRecord::Relation === a.klass.__send__(association_scope_name)
+              return lambda do |*args|
+                joins(a.name).merge(a.klass.__send__(association_scope_name, *args))
+              end
+            end
+          end
+        end
+
+        nil
+      end
+
       def searchlogic_column_condition_method_block(method)
         method = method.to_s
-        searchlogic_arel_mapping_match(method) || searchlogic_prefix_suffix_match(method)
+        searchlogic_arel_mapping_match(method) ||
+          searchlogic_prefix_suffix_match(method) ||
+          searchlogic_association_finder_match(method)
       end
 
       def column_names_regexp
