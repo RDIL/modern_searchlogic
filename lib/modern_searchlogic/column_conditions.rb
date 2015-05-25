@@ -37,9 +37,7 @@ module ModernSearchlogic
 
       def searchlogic_column_condition_method_block(method)
         method = method.to_s
-
-        searchlogic_arel_mapping_match(method) ||
-          searchlogic_prefix_suffix_match(method)
+        searchlogic_arel_mapping_match(method) || searchlogic_prefix_suffix_match(method)
       end
 
       def column_names_regexp
