@@ -28,21 +28,33 @@ module ModernSearchlogic
         searchlogic_column_suffixes << [suffix, method_block]
       end
 
+      def searchlogic_column_prefix(prefix, &method_block)
+        searchlogic_column_prefixes << [prefix, method_block]
+      end
+
       private
 
-      def searchlogic_suffix_match(method_name)
-        searchlogic_column_suffixes.lazy.map do |suffix, method_block|
+      def searchlogic_prefix_suffix_match(method_name)
+        searchlogic_column_suffixes.each do |suffix, method_block|
           if match = method_name.match(/\A(#{column_names_regexp})#{suffix}\z/)
-            lambda { |*args| instance_exec(match[1], *args, &method_block) }
+            return lambda { |*args| instance_exec(match[1], *args, &method_block) }
           end
-        end.find(&:present?)
+        end
+
+        searchlogic_column_prefixes.each do |prefix, method_block|
+          if match = method_name.match(/\A#{prefix}(#{column_names_regexp})\z/)
+            return lambda { |*args| instance_exec(match[1], *args, &method_block) }
+          end
+        end
+
+        nil
       end
 
       def searchlogic_column_condition_method_block(method)
         method = method.to_s
 
         searchlogic_arel_mapping_match(method) ||
-          searchlogic_suffix_match(method)
+          searchlogic_prefix_suffix_match(method)
       end
 
       def column_names_regexp
@@ -76,6 +88,9 @@ module ModernSearchlogic
       base.class_eval do
         class_attribute :searchlogic_column_suffixes
         base.searchlogic_column_suffixes = []
+
+        class_attribute :searchlogic_column_prefixes
+        base.searchlogic_column_prefixes = []
 
         searchlogic_column_suffix '_like' do |column_name, val|
           where(arel_table[column_name].matches("%#{val}%"))
@@ -116,6 +131,14 @@ module ModernSearchlogic
         not_null_matcher = lambda { |column_name| where(arel_table[column_name].not_eq(nil)) }
         searchlogic_column_suffix '_not_null', &not_null_matcher
         searchlogic_column_suffix '_not_nil', &not_null_matcher
+
+        searchlogic_column_prefix 'descend_by_' do |column_name|
+          order(column_name => :desc)
+        end
+
+        searchlogic_column_prefix 'ascend_by_' do |column_name|
+          order(column_name => :asc)
+        end
       end
     end
   end

@@ -65,6 +65,23 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_eq_any, {:username => 'Andrew'}, ['Andrew', 'Warner', 'William']
     it_should_behave_like 'a column condition', :username_not_in, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
     it_should_behave_like 'a column condition', :username_not_eq_any, {:username => 'Dave'}, ['Andrew', 'Warner', 'William']
+
+    context 'ordering' do
+      let!(:younger) { User.create!(:age => 14) }
+      let!(:older) { User.create!(:age => 18) }
+
+      context '#ascend_by_age' do
+        specify do
+          User.ascend_by_age.first.should == younger
+        end
+      end
+
+      context '#descend_by_age' do
+        specify do
+          User.descend_by_age.first.should == older
+        end
+      end
+    end
   end
 
   context 'chaining' do
