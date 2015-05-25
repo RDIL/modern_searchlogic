@@ -72,13 +72,13 @@ module ModernSearchlogic
 
       base.class_eval do
         class_attribute :searchlogic_column_suffixes
-        base.searchlogic_column_suffixes = []
+        self.searchlogic_column_suffixes = []
 
         class_attribute :searchlogic_column_prefixes
-        base.searchlogic_column_prefixes = []
+        self.searchlogic_column_prefixes = []
 
         class_attribute :searchlogic_to_arel_mappings
-        base.searchlogic_to_arel_mappings = {}
+        self.searchlogic_to_arel_mappings = {}
 
         searchlogic_arel_alias :equals, :eq
         searchlogic_arel_alias :eq, :eq
