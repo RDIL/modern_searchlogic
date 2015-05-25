@@ -5,6 +5,8 @@ module ModernSearchlogic
         super || !!searchlogic_column_condition_method_block(method.to_s)
       end
 
+      private
+
       def searchlogic_column_suffix(suffix, &method_block)
         searchlogic_column_suffixes << [suffix, method_block]
       end
@@ -16,8 +18,6 @@ module ModernSearchlogic
       def searchlogic_arel_alias(searchlogic_suffix, arel_method)
         searchlogic_to_arel_mappings[searchlogic_suffix] = arel_method
       end
-
-      private
 
       def searchlogic_prefix_suffix_match(method_name)
         searchlogic_column_suffixes.each do |suffix, method_block|
