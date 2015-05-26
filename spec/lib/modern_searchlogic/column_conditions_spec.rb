@@ -128,7 +128,7 @@ describe ModernSearchlogic::ColumnConditions do
       User.posts_comments_body_like('great walk').first.should == dave
     end
 
-    specify 'when association is not a scope should raise an exception' do
+    specify 'when association method is not a scope should raise an exception' do
       expect { User.posts_is_like }.to raise_error ArgumentError
     end
   end
