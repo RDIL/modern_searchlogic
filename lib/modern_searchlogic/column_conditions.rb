@@ -8,6 +8,7 @@ module ModernSearchlogic
       private
 
       def searchlogic_suffix_condition(suffix, &method_block)
+        raise "Not sure how to handle suffix condition that takes #{method_block.arity} args" if method_block.arity > 2
         searchlogic_suffix_conditions << [suffix, method_block]
       end
 
@@ -23,18 +24,40 @@ module ModernSearchlogic
 
       def searchlogic_suffix_condition_match(method_name)
         searchlogic_suffix_conditions.each do |suffix, method_block|
-          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}\z/)
+          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:_(any|all))?\z/)
+            expected_args_length = method_block.arity - 1
             column_names = match[1].split('_or_')
+            any_or_all = match[2] && (match[2] == 'any' ? :or : :and)
+            next if expected_args_length.zero? && any_or_all
 
             return lambda do |*args|
-              expecting_num = method_block.arity - 1
-              unless args.length == expecting_num
-                raise ArgumentError, "wrong number of arguments (#{args.length} for #{expecting_num})"
+              args = any_or_all ? Array.wrap(args).flatten : args
+
+              if expected_args_length == 1
+                if args.length.zero? || (args.length > 1 && !any_or_all)
+                  raise ArgumentError, "wrong number of arguments (#{args.length} for 1)"
+                end
+
+                arel_conditions = args.map do |arg|
+                  column_names.map do |n|
+                    instance_exec(n, arg, &method_block)
+                  end.reduce(:or)
+                end
+
+                if any_or_all
+                  arel_conditions = arel_conditions.reduce(any_or_all)
+                else
+                  arel_conditions = arel_conditions.first
+                end
+              elsif expected_args_length.zero?
+                if args.length.nonzero?
+                  raise ArgumentError, "wrong number of arguments (#{args.length}) for 0"
+                end
+
+                arel_conditions = column_names.map { |n| instance_exec(n, &method_block) }.reduce(:or)
               end
 
-              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }
-
-              where(arel_conditions.reduce(:or))
+              where(arel_conditions)
             end
           end
         end
@@ -105,6 +128,7 @@ module ModernSearchlogic
         searchlogic_arel_alias :is, :eq
         searchlogic_arel_alias :does_not_equal, :not_eq
         searchlogic_arel_alias :ne, :not_eq
+        searchlogic_arel_alias :not_eq, :not_eq
         searchlogic_arel_alias :greater_than, :gt
         searchlogic_arel_alias :gt, :gt
         searchlogic_arel_alias :less_than, :lt
@@ -114,9 +138,7 @@ module ModernSearchlogic
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
         searchlogic_arel_alias :in, :in
-        searchlogic_arel_alias :eq_any, :in
         searchlogic_arel_alias :not_in, :not_in
-        searchlogic_arel_alias :not_eq_any, :not_in
 
         searchlogic_suffix_condition '_like' do |column_name, val|
           arel_table[column_name].matches("%#{val}%")

@@ -113,11 +113,11 @@ describe ModernSearchlogic::ColumnConditions do
         User.username_or_email_like('andwar').first.should == user
       end
 
-      pending do
+      specify do
         User.username_or_email_like_all('andwar', 'gmail').first.should == user
       end
 
-      pending do
+      specify do
         User.username_or_email_like_any('foobaz', 'warner').first.should == user
       end
     end
