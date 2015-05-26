@@ -96,7 +96,7 @@ describe ModernSearchlogic::ColumnConditions do
   end
 
   context 'chaining' do
-    let!(:user) { User.create!(:username => 'William Andrew Warner', :age => 28) }
+    let!(:user) { User.create!(:username => 'William Andrew Warner', :age => 28, :email => 'willandwar@gmail.com') }
 
     before do
       User.create!(:username => 'Jane Smith', :age => 23)
@@ -106,6 +106,20 @@ describe ModernSearchlogic::ColumnConditions do
 
     specify 'chaining scopes should work' do
       User.age_gt(25).username_like('andr').first.should == user
+    end
+
+    context 'using or' do
+      specify do
+        User.username_or_email_like('andwar').first.should == user
+      end
+
+      pending do
+        User.username_or_email_like_all('andwar', 'gmail').first.should == user
+      end
+
+      pending do
+        User.username_or_email_like_any('foobaz', 'warner').first.should == user
+      end
     end
   end
 
