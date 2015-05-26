@@ -5,4 +5,8 @@ class Post < ActiveRecord::Base
   def self.is_like(something)
     "whoops"
   end
+
+  def self.published
+    where(arel_table[:published_at].not_eq(nil))
+  end
 end

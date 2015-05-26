@@ -128,6 +128,11 @@ describe ModernSearchlogic::ColumnConditions do
       User.posts_comments_body_like('great walk').first.should == dave
     end
 
+    specify 'custom scopes should work' do
+      user.posts.first.update!(:published_at => Time.now)
+      User.posts_published.first.should == user
+    end
+
     specify 'when association method is not a scope should raise an exception' do
       expect { User.posts_is_like }.to raise_error ArgumentError
     end
