@@ -39,16 +39,10 @@ module ModernSearchlogic
                 end
 
                 arel_conditions = args.map do |arg|
-                  column_names.map do |n|
-                    instance_exec(n, arg, &method_block)
-                  end.reduce(:or)
+                  column_names.map { |n| instance_exec(n, arg, &method_block) }.reduce(:or)
                 end
 
-                if any_or_all
-                  arel_conditions = arel_conditions.reduce(any_or_all)
-                else
-                  arel_conditions = arel_conditions.first
-                end
+                arel_conditions = any_or_all ? arel_conditions.reduce(any_or_all) : arel_conditions.first
               elsif expected_args_length.zero?
                 if args.length.nonzero?
                   raise ArgumentError, "wrong number of arguments (#{args.length}) for 0"
