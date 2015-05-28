@@ -8,7 +8,7 @@ module ModernSearchlogic
       private
 
       def searchlogic_suffix_condition(suffix, options = {}, &method_block)
-        raise "Not sure how to handle suffix condition that takes #{method_block.arity} args" if method_block.arity > 2
+        raise "Not sure how to handle suffix condition that takes #{method_block.arity} args" if method_block.arity > 3
         searchlogic_suffix_conditions << [suffix, options, method_block]
       end
 
@@ -17,43 +17,40 @@ module ModernSearchlogic
       end
 
       def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
-        searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, val|
-          arel_table[column_name].__send__(arel_method, val)
+        searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, any_or_all, val|
+          value_mapper = options.fetch(:map_value, ->(x) { x })
+
+          if any_or_all
+            arel_table[column_name].__send__(arel_method.to_s + any_or_all, val.map(&value_mapper))
+          else
+            arel_table[column_name].__send__(arel_method, value_mapper.call(val))
+          end
         end
       end
 
       def searchlogic_suffix_condition_match(method_name)
         searchlogic_suffix_conditions.each do |suffix, options, method_block|
-          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:_(any|all))?\z/)
-            expected_args_length = method_block.arity - 1
+          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:(_any|_all))?\z/)
+            expected_args_length = method_block.arity > 1 ? 1 : 0
             column_names = match[1].split('_or_')
-            any_or_all = match[2] && (match[2] == 'any' ? :or : :and)
+            any_or_all = match[2]
+
             next if expected_args_length.zero? && any_or_all
 
             return lambda do |*args|
-              if any_or_all && !options[:array_args]
-                args = Array.wrap(args).flatten
-              elsif !any_or_all && options[:array_args]
-                args = [Array.wrap(args).flatten]
+              if any_or_all
+                args = [options[:array_args] ? args : args.flatten]
+                raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.first.length.zero?
+              elsif options[:array_args]
+                args = [args.flatten]
               end
 
-              if expected_args_length == 1
-                if !any_or_all && (args.length.zero? || args.length > 1)
-                  raise ArgumentError, "wrong number of arguments (#{args.length} for 1)"
-                end
-
-                arel_conditions = args.map do |arg|
-                  column_names.map { |n| instance_exec(n, arg, &method_block) }.reduce(:or)
-                end
-
-                arel_conditions = any_or_all ? arel_conditions.reduce(any_or_all) : arel_conditions.first
-              elsif expected_args_length.zero?
-                if args.length.nonzero?
-                  raise ArgumentError, "wrong number of arguments (#{args.length}) for 0"
-                end
-
-                arel_conditions = column_names.map { |n| instance_exec(n, &method_block) }.reduce(:or)
+              unless any_or_all || expected_args_length == args.length
+                raise ArgumentError, "wrong number of arguments (#{args.length} for #{expected_args_length})"
               end
+
+              args.unshift(any_or_all) if expected_args_length.nonzero?
+              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
 
               where(arel_conditions)
             end
@@ -137,30 +134,12 @@ module ModernSearchlogic
         searchlogic_arel_alias :lte, :lteq
         searchlogic_arel_alias :in, :in, :array_args => true
         searchlogic_arel_alias :not_in, :not_in, :array_args => true
-
-        searchlogic_suffix_condition '_like' do |column_name, val|
-          arel_table[column_name].matches("%#{val}%")
-        end
-
-        searchlogic_suffix_condition '_begins_with' do |column_name, val|
-          arel_table[column_name].matches("#{val}%")
-        end
-
-        searchlogic_suffix_condition '_ends_with' do |column_name, val|
-          arel_table[column_name].matches("%#{val}")
-        end
-
-        searchlogic_suffix_condition '_not_like' do |column_name, val|
-          arel_table[column_name].does_not_match("%#{val}%")
-        end
-
-        searchlogic_suffix_condition '_not_begin_with' do |column_name, val|
-          arel_table[column_name].does_not_match("#{val}%")
-        end
-
-        searchlogic_suffix_condition '_not_end_with' do |column_name, val|
-          arel_table[column_name].does_not_match("%#{val}")
-        end
+        searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
+        searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
+        searchlogic_arel_alias :ends_with, :matches, :map_value => -> (val) { "%#{val}" }
+        searchlogic_arel_alias :not_like, :does_not_match, :map_value => -> (val) { "%#{val}%" }
+        searchlogic_arel_alias :not_begin_with, :does_not_match, :map_value => -> (val) { "#{val}%" }
+        searchlogic_arel_alias :not_end_with, :does_not_match, :map_value => -> (val) { "%#{val}" }
 
         searchlogic_suffix_condition '_blank' do |column_name|
           arel_table[column_name].eq(nil).or(arel_table[column_name].eq(''))

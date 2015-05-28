@@ -125,9 +125,9 @@ describe ModernSearchlogic::ColumnConditions do
         User.username_or_email_like_any('foobaz', 'warner').first.should == user
       end
 
-      specify { User.username_or_email_like_any([]).first.should be_nil }
-      specify { User.username_or_email_like_any.first.should be_nil }
-      specify { User.username_or_email_not_like_any.ascend_by_id.first.should == user }
+      specify { expect { User.username_or_email_like_any([]).first.should be_nil }.to raise_error ArgumentError }
+      specify { expect { User.username_or_email_like_any }.to raise_error ArgumentError }
+      specify { expect { User.username_or_email_not_like_any }.to raise_error ArgumentError }
 
       context 'with "in" conditions' do
         specify { User.username_in('foobaz', 'William Andrew Warner').first.should == user }
@@ -135,9 +135,10 @@ describe ModernSearchlogic::ColumnConditions do
 
         specify { User.username_in([]).first.should be_nil }
         specify { User.username_in.first.should be_nil }
+        specify { User.username_not_in.ascend_by_id.first.should == user }
 
         specify do
-          User.username_or_email_in_all(['William Andrew Warner', 'warner'], ['willandwar@gmail.com', 'foobaz@biz.edu']).first.should == user
+          User.username_or_email_in_all(['William Andrew Warner', 'warnand'], ['willandwar@gmail.com', 'William Andrew Warner']).first.should == user
         end
 
         specify do
