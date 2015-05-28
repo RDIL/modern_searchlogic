@@ -20,7 +20,7 @@ module ModernSearchlogic
         value_mapper = options.fetch(:map_value, ->(x) { x })
         searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, any_or_all, val|
           if any_or_all
-            arel_table[column_name].__send__(arel_method.to_s + any_or_all, val.map(&value_mapper))
+            arel_table[column_name].__send__("#{arel_method}_#{any_or_all}", val.map(&value_mapper))
           else
             arel_table[column_name].__send__(arel_method, value_mapper.call(val))
           end
@@ -29,7 +29,7 @@ module ModernSearchlogic
 
       def searchlogic_suffix_condition_match(method_name)
         searchlogic_suffix_conditions.each do |suffix, options, method_block|
-          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:(_any|_all))?\z/)
+          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:_(any|all))?\z/)
             expected_args_length = method_block.arity > 1 ? 1 : 0
             column_names = match[1].split('_or_')
             any_or_all = match[2]
@@ -37,14 +37,15 @@ module ModernSearchlogic
             next if expected_args_length.zero? && any_or_all
 
             return lambda do |*args|
-              if any_or_all
-                args = [options[:array_args] ? args : args.flatten]
-                raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.first.length.zero?
-              elsif options[:array_args]
+              if options[:takes_array_args]
+                args = [any_or_all ? args : args.flatten]
+              elsif any_or_all
                 args = [args.flatten]
               end
 
-              unless any_or_all || expected_args_length == args.length
+              if any_or_all
+                raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.first.length.zero?
+              elsif expected_args_length != args.length
                 raise ArgumentError, "wrong number of arguments (#{args.length} for #{expected_args_length})"
               end
 
@@ -131,8 +132,8 @@ module ModernSearchlogic
         searchlogic_arel_alias :gte, :gteq
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
-        searchlogic_arel_alias :in, :in, :array_args => true
-        searchlogic_arel_alias :not_in, :not_in, :array_args => true
+        searchlogic_arel_alias :in, :in, :takes_array_args => true
+        searchlogic_arel_alias :not_in, :not_in, :takes_array_args => true
         searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
         searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
         searchlogic_arel_alias :ends_with, :matches, :map_value => -> (val) { "%#{val}" }
