@@ -17,9 +17,8 @@ module ModernSearchlogic
       end
 
       def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
+        value_mapper = options.fetch(:map_value, ->(x) { x })
         searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, any_or_all, val|
-          value_mapper = options.fetch(:map_value, ->(x) { x })
-
           if any_or_all
             arel_table[column_name].__send__(arel_method.to_s + any_or_all, val.map(&value_mapper))
           else
