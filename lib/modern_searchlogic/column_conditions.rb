@@ -7,23 +7,23 @@ module ModernSearchlogic
 
       private
 
-      def searchlogic_suffix_condition(suffix, &method_block)
+      def searchlogic_suffix_condition(suffix, options = {}, &method_block)
         raise "Not sure how to handle suffix condition that takes #{method_block.arity} args" if method_block.arity > 2
-        searchlogic_suffix_conditions << [suffix, method_block]
+        searchlogic_suffix_conditions << [suffix, options, method_block]
       end
 
       def searchlogic_column_prefix(prefix, &method_block)
         searchlogic_column_prefixes << [prefix, method_block]
       end
 
-      def searchlogic_arel_alias(searchlogic_suffix, arel_method)
-        searchlogic_suffix_condition "_#{searchlogic_suffix}" do |column_name, val|
+      def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
+        searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, val|
           arel_table[column_name].__send__(arel_method, val)
         end
       end
 
       def searchlogic_suffix_condition_match(method_name)
-        searchlogic_suffix_conditions.each do |suffix, method_block|
+        searchlogic_suffix_conditions.each do |suffix, options, method_block|
           if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}(?:_(any|all))?\z/)
             expected_args_length = method_block.arity - 1
             column_names = match[1].split('_or_')
@@ -31,10 +31,14 @@ module ModernSearchlogic
             next if expected_args_length.zero? && any_or_all
 
             return lambda do |*args|
-              args = any_or_all ? Array.wrap(args).flatten : args
+              if any_or_all && !options[:array_args]
+                args = Array.wrap(args).flatten
+              elsif !any_or_all && options[:array_args]
+                args = [Array.wrap(args).flatten]
+              end
 
               if expected_args_length == 1
-                if args.length.zero? || (args.length > 1 && !any_or_all)
+                if !any_or_all && (args.length.zero? || args.length > 1)
                   raise ArgumentError, "wrong number of arguments (#{args.length} for 1)"
                 end
 
@@ -131,8 +135,8 @@ module ModernSearchlogic
         searchlogic_arel_alias :gte, :gteq
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
-        searchlogic_arel_alias :in, :in
-        searchlogic_arel_alias :not_in, :not_in
+        searchlogic_arel_alias :in, :in, :array_args => true
+        searchlogic_arel_alias :not_in, :not_in, :array_args => true
 
         searchlogic_suffix_condition '_like' do |column_name, val|
           arel_table[column_name].matches("%#{val}%")

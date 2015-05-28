@@ -19,10 +19,12 @@ describe ModernSearchlogic::ColumnConditions do
       Post.methods.should_not include finder_method
     end
 
-    specify 'the wrong arity should raise an error' do
-      error_args = find_by ? [] : ['foobar']
+    unless find_by.is_a?(Array)
+      specify 'the wrong arity should raise an error' do
+        error_args = find_by ? [] : ['foobar']
 
-      expect { User.__send__(finder_method, *error_args) }.to raise_error ArgumentError
+        expect { User.__send__(finder_method, *error_args) }.to raise_error ArgumentError
+      end
     end
   end
 
@@ -112,13 +114,35 @@ describe ModernSearchlogic::ColumnConditions do
       specify do
         User.username_or_email_like('andwar').first.should == user
       end
+    end
 
+    context 'using _any and _all suffixes' do
       specify do
         User.username_or_email_like_all('andwar', 'gmail').first.should == user
       end
 
       specify do
         User.username_or_email_like_any('foobaz', 'warner').first.should == user
+      end
+
+      specify { User.username_or_email_like_any([]).first.should be_nil }
+      specify { User.username_or_email_like_any.first.should be_nil }
+      specify { User.username_or_email_not_like_any.ascend_by_id.first.should == user }
+
+      context 'with "in" conditions' do
+        specify { User.username_in('foobaz', 'William Andrew Warner').first.should == user }
+        specify { User.username_in(['foobaz', 'William Andrew Warner']).first.should == user }
+
+        specify { User.username_in([]).first.should be_nil }
+        specify { User.username_in.first.should be_nil }
+
+        specify do
+          User.username_or_email_in_all(['William Andrew Warner', 'warner'], ['willandwar@gmail.com', 'foobaz@biz.edu']).first.should == user
+        end
+
+        specify do
+          User.username_or_email_in_any(['foo', 'bar'], ['willandwar@gmail.com', 'foobaz@biz.edu']).first.should == user
+        end
       end
     end
   end
