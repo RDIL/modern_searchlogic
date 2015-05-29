@@ -58,38 +58,28 @@ module ModernSearchlogic
           return lambda { |*args| instance_exec(match[2], *args, &method_block) }
         elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
           prefix, association_name, rest = match.to_a.drop(1)
-          association = association_by_name.fetch(association_name.to_sym)
-          association_finder = prefix + rest
 
-          if association.klass.respond_to?(association_finder)
-            return lambda do |*args|
-              scope = association.klass.__send__(association_finder, *args)
-              unless ActiveRecord::Relation === scope
-                raise ArgumentError, "Expected #{association_finder.inspect} to return an ActiveRecord::Relation"
-              end
-
-              joins(association.name).merge(scope)
-            end
-          end
+          searchlogic_association_finder_method(association_by_name.fetch(association_name.to_sym), prefix + rest)
         end
       end
 
-      def searchlogic_association_finder_match(method_name)
-        reflect_on_all_associations.each do |a|
-          if method_name =~ /\A#{a.name}_(\S+)\z/ && a.klass.respond_to?($1)
-            association_scope_name = $1
-            return lambda do |*args|
-              scope = a.klass.__send__(association_scope_name, *args)
-              unless ActiveRecord::Relation === scope
-                raise ArgumentError, "Expected #{association_scope_name.inspect} to return an ActiveRecord::Relation"
-              end
+      def searchlogic_association_suffix_match(method_name)
+        if match = method_name.match(/\A(#{association_names_regexp})_(\S+)\z/)
+          searchlogic_association_finder_method(association_by_name.fetch(match[1].to_sym), match[2])
+        end
+      end
 
-              joins(a.name).merge(scope)
+      def searchlogic_association_finder_method(association, method_name)
+        if association.klass.respond_to?(method_name)
+          return lambda do |*args|
+            scope = association.klass.__send__(method_name, *args)
+            unless ActiveRecord::Relation === scope
+              raise ArgumentError, "Expected #{method_name.inspect} to return an ActiveRecord::Relation"
             end
+
+            joins(association.name).merge(scope)
           end
         end
-
-        nil
       end
 
       def association_by_name
@@ -106,7 +96,7 @@ module ModernSearchlogic
         method = method.to_s
         searchlogic_prefix_match(method) ||
           searchlogic_suffix_condition_match(method) ||
-          searchlogic_association_finder_match(method)
+          searchlogic_association_suffix_match(method)
       end
 
       def column_names_regexp
