@@ -56,6 +56,21 @@ module ModernSearchlogic
         if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
           method_block = searchlogic_column_prefixes.fetch(match[1])
           return lambda { |*args| instance_exec(match[2], *args, &method_block) }
+        elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
+          prefix, association_name, rest = match.to_a.drop(1)
+          association = association_by_name.fetch(association_name.to_sym)
+          association_finder = prefix + rest
+
+          if association.klass.respond_to?(association_finder)
+            return lambda do |*args|
+              scope = association.klass.__send__(association_finder, *args)
+              unless ActiveRecord::Relation === scope
+                raise ArgumentError, "Expected #{association_finder.inspect} to return an ActiveRecord::Relation"
+              end
+
+              joins(association.name).merge(scope)
+            end
+          end
         end
       end
 
@@ -75,6 +90,16 @@ module ModernSearchlogic
         end
 
         nil
+      end
+
+      def association_by_name
+        reflect_on_all_associations.each.with_object({}) do |assoc, obj|
+          obj[assoc.name] = assoc
+        end
+      end
+
+      def association_names_regexp
+        association_by_name.keys.join('|')
       end
 
       def searchlogic_column_condition_method_block(method)

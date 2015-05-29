@@ -94,6 +94,19 @@ describe ModernSearchlogic::ColumnConditions do
           User.descend_by_age.first.should == older
         end
       end
+
+      context 'chained with associations' do
+        let!(:youngers_post) { younger.posts.create!(:title => 'The best post') }
+        let!(:olders_post) { older.posts.create!(:title => 'A great post') }
+
+        specify do
+          User.ascend_by_posts_title.first.should == older
+        end
+
+        specify do
+          User.descend_by_posts_title.first.should == younger
+        end
+      end
     end
   end
 
