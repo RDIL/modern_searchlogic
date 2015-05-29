@@ -8,7 +8,7 @@ module ModernSearchlogic
       private
 
       def searchlogic_suffix_condition(suffix, options = {}, &method_block)
-        searchlogic_suffix_conditions << [suffix, options, method_block]
+        searchlogic_suffix_conditions[suffix] = [options, method_block]
       end
 
       def searchlogic_column_prefix(prefix, &method_block)
@@ -35,22 +35,20 @@ module ModernSearchlogic
       end
 
       def searchlogic_suffix_condition_match(method_name)
-        searchlogic_suffix_conditions.each do |suffix, options, method_block|
-          if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)#{suffix}\z/)
-            column_names = match[1].split('_or_')
+        suffix_regexp = searchlogic_suffix_conditions.keys.join('|')
+        if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)(#{suffix_regexp})\z/)
+          options, method_block = searchlogic_suffix_conditions.fetch(match[2])
+          column_names = match[1].split('_or_')
 
-            return lambda do |*args|
-              if options[:expecting_args] && args.length != options[:expecting_args]
-                raise ArgumentError, "wrong number of arguments (#{args.length} for #{options[:expecting_args]})"
-              end
-
-              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
-              where(arel_conditions)
+          return lambda do |*args|
+            if options[:expecting_args] && args.length != options[:expecting_args]
+              raise ArgumentError, "wrong number of arguments (#{args.length} for #{options[:expecting_args]})"
             end
+
+            arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
+            where(arel_conditions)
           end
         end
-
-        nil
       end
 
       def searchlogic_prefix_match(method_name)
@@ -124,7 +122,7 @@ module ModernSearchlogic
 
       base.class_eval do
         class_attribute :searchlogic_suffix_conditions
-        self.searchlogic_suffix_conditions = []
+        self.searchlogic_suffix_conditions = {}
 
         class_attribute :searchlogic_column_prefixes
         self.searchlogic_column_prefixes = []
