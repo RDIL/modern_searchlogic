@@ -11,8 +11,8 @@ module ModernSearchlogic
         searchlogic_suffix_conditions[suffix] = [options, method_block]
       end
 
-      def searchlogic_column_prefix(prefix, &method_block)
-        searchlogic_column_prefixes[prefix] = method_block
+      def searchlogic_prefix_condition(prefix, &method_block)
+        searchlogic_prefix_conditions[prefix] = method_block
       end
 
       def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
@@ -52,9 +52,9 @@ module ModernSearchlogic
       end
 
       def searchlogic_prefix_match(method_name)
-        prefix_regexp = searchlogic_column_prefixes.keys.join('|')
+        prefix_regexp = searchlogic_prefix_conditions.keys.join('|')
         if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
-          method_block = searchlogic_column_prefixes.fetch(match[1])
+          method_block = searchlogic_prefix_conditions.fetch(match[1])
           return lambda { |*args| instance_exec(match[2], *args, &method_block) }
         elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
           prefix, association_name, rest = match.to_a.drop(1)
@@ -137,8 +137,8 @@ module ModernSearchlogic
         class_attribute :searchlogic_suffix_conditions
         self.searchlogic_suffix_conditions = {}
 
-        class_attribute :searchlogic_column_prefixes
-        self.searchlogic_column_prefixes = {}
+        class_attribute :searchlogic_prefix_conditions
+        self.searchlogic_prefix_conditions = {}
 
         searchlogic_arel_alias :equals, :eq
         searchlogic_arel_alias :eq, :eq
@@ -179,11 +179,11 @@ module ModernSearchlogic
         searchlogic_suffix_condition '_not_null', :expecting_args => 0, &not_null_matcher
         searchlogic_suffix_condition '_not_nil', :expecting_args => 0, &not_null_matcher
 
-        searchlogic_column_prefix 'descend_by_' do |column_name|
+        searchlogic_prefix_condition 'descend_by_' do |column_name|
           order(column_name => :desc)
         end
 
-        searchlogic_column_prefix 'ascend_by_' do |column_name|
+        searchlogic_prefix_condition 'ascend_by_' do |column_name|
           order(column_name => :asc)
         end
       end
