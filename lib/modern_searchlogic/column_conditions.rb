@@ -12,7 +12,7 @@ module ModernSearchlogic
       end
 
       def searchlogic_column_prefix(prefix, &method_block)
-        searchlogic_column_prefixes << [prefix, method_block]
+        searchlogic_column_prefixes[prefix] = method_block
       end
 
       def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
@@ -52,13 +52,11 @@ module ModernSearchlogic
       end
 
       def searchlogic_prefix_match(method_name)
-        searchlogic_column_prefixes.each do |prefix, method_block|
-          if match = method_name.match(/\A#{prefix}(#{column_names_regexp})\z/)
-            return lambda { |*args| instance_exec(match[1], *args, &method_block) }
-          end
+        prefix_regexp = searchlogic_column_prefixes.keys.join('|')
+        if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
+          method_block = searchlogic_column_prefixes.fetch(match[1])
+          return lambda { |*args| instance_exec(match[2], *args, &method_block) }
         end
-
-        nil
       end
 
       def searchlogic_association_finder_match(method_name)
@@ -125,7 +123,7 @@ module ModernSearchlogic
         self.searchlogic_suffix_conditions = {}
 
         class_attribute :searchlogic_column_prefixes
-        self.searchlogic_column_prefixes = []
+        self.searchlogic_column_prefixes = {}
 
         searchlogic_arel_alias :equals, :eq
         searchlogic_arel_alias :eq, :eq
