@@ -5,6 +5,10 @@ describe ModernSearchlogic::ColumnConditions do
     finder_method, user_attributes, find_by = *args
     let!(:user) { User.create!(user_attributes) }
 
+    specify "User should #respond_to? #{finder_method}" do
+      User.should respond_to finder_method
+    end
+
     specify "#{finder_method} returns a countable scope" do
       User.__send__(*[finder_method, find_by].compact).count.should == 1
     end
