@@ -189,8 +189,12 @@ describe ModernSearchlogic::ColumnConditions do
       User.posts_published.first.should == user
     end
 
-    specify 'when association method is not a scope should raise an exception' do
-      expect { User.posts_is_like }.to raise_error ArgumentError
+    specify "shouldn't be able to call other (potentially dangerous) class methods" do
+      expect { User.posts_destroy_all }.to raise_error NoMethodError
+    end
+
+    specify 'when association method is not a scope should not define a method' do
+      expect { User.posts_is_like }.to raise_error NoMethodError
     end
   end
 end

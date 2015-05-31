@@ -2,7 +2,12 @@ module ModernSearchlogic
   module ColumnConditions
     module ClassMethods
       def respond_to_missing?(method, *)
-        super || !!searchlogic_column_condition_method_block(method.to_s)
+        super || valid_searchlogic_scope?(method)
+      end
+
+      def valid_searchlogic_scope?(method)
+        !!searchlogic_column_condition_method_block(method.to_s) ||
+          _defined_scopes.include?(method)
       end
 
       private
@@ -70,14 +75,9 @@ module ModernSearchlogic
       end
 
       def searchlogic_association_finder_method(association, method_name)
-        if association.klass.respond_to?(method_name)
+        if association.klass.valid_searchlogic_scope?(method_name.to_sym)
           return lambda do |*args|
-            scope = association.klass.__send__(method_name, *args)
-            unless ActiveRecord::Relation === scope
-              raise ArgumentError, "Expected #{method_name.inspect} to return an ActiveRecord::Relation"
-            end
-
-            joins(association.name).merge(scope)
+            joins(association.name).merge(association.klass.__send__(method_name, *args))
           end
         end
       end
