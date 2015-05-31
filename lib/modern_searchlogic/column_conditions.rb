@@ -93,6 +93,8 @@ module ModernSearchlogic
       end
 
       def searchlogic_column_condition_method_block(method)
+        return if self == ActiveRecord::Base
+
         method = method.to_s
         searchlogic_prefix_match(method) ||
           searchlogic_suffix_condition_match(method) ||
@@ -180,11 +182,11 @@ module ModernSearchlogic
         searchlogic_suffix_condition '_not_nil', :expecting_args => 0, &not_null_matcher
 
         searchlogic_prefix_condition 'descend_by_' do |column_name|
-          order(column_name => :desc)
+          order(column_name.to_sym => :desc)
         end
 
         searchlogic_prefix_condition 'ascend_by_' do |column_name|
-          order(column_name => :asc)
+          order(column_name.to_sym => :asc)
         end
       end
     end
