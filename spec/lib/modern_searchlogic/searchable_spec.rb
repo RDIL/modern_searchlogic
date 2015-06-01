@@ -10,5 +10,14 @@ describe ModernSearchlogic::Searchable do
     end
 
     it { should == User.username_eq('andrew').email_eq_any('d@z.com', 'f@q.com', 'p@l.edu').to_sql }
+
+    context 'calling non-scope methods' do
+      let!(:user) { User.create! }
+
+      specify 'should be ignored' do
+        User.search(:destroy_all => true)
+        user.should_not be_nil
+      end
+    end
   end
 end
