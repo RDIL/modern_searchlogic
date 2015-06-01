@@ -3,7 +3,7 @@ module ModernSearchlogic
     module ClassMethods
       def scope(name, body, &block)
         super(name, body, &block).tap do |*|
-          _defined_scopes << name.to_sym
+          self._defined_scopes |= [name.to_sym]
         end
       end
     end
