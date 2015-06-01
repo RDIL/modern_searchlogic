@@ -46,10 +46,7 @@ module ModernSearchlogic
           column_names = match[1].split('_or_')
 
           return lambda do |*args|
-            if options[:expecting_args] && args.length != options[:expecting_args]
-              raise ArgumentError, "wrong number of arguments (#{args.length} for #{options[:expecting_args]})"
-            end
-
+            validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
             arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
             where(arel_conditions)
           end
@@ -60,7 +57,10 @@ module ModernSearchlogic
         prefix_regexp = searchlogic_prefix_conditions.keys.join('|')
         if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
           method_block = searchlogic_prefix_conditions.fetch(match[1])
-          return lambda { |*args| instance_exec(match[2], *args, &method_block) }
+          return lambda do |*args|
+            validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
+            instance_exec(match[2], *args, &method_block)
+          end
         elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
           prefix, association_name, rest = match.to_a.drop(1)
 
@@ -130,6 +130,13 @@ module ModernSearchlogic
 
         args.first
       end
+
+      def validate_argument_count!(expected_args, actual_args)
+        if expected_args != actual_args
+          raise ArgumentError, "wrong number of arguments (#{actual_args} for #{expected_args})"
+        end
+      end
+
     end
 
     def self.included(base)
@@ -165,21 +172,21 @@ module ModernSearchlogic
         searchlogic_arel_alias :not_begin_with, :does_not_match, :map_value => -> (val) { "#{val}%" }
         searchlogic_arel_alias :not_end_with, :does_not_match, :map_value => -> (val) { "%#{val}" }
 
-        searchlogic_suffix_condition '_blank', :expecting_args => 0 do |column_name|
+        searchlogic_suffix_condition '_blank' do |column_name|
           arel_table[column_name].eq(nil).or(arel_table[column_name].eq(''))
         end
 
-        searchlogic_suffix_condition '_present', :expecting_args => 0 do |column_name|
+        searchlogic_suffix_condition '_present' do |column_name|
           arel_table[column_name].not_eq(nil).and(arel_table[column_name].not_eq(''))
         end
 
         null_matcher = lambda { |column_name| arel_table[column_name].eq(nil) }
-        searchlogic_suffix_condition '_null', :expecting_args => 0, &null_matcher
-        searchlogic_suffix_condition '_nil', :expecting_args => 0, &null_matcher
+        searchlogic_suffix_condition '_null', &null_matcher
+        searchlogic_suffix_condition '_nil', &null_matcher
 
         not_null_matcher = lambda { |column_name| arel_table[column_name].not_eq(nil) }
-        searchlogic_suffix_condition '_not_null', :expecting_args => 0, &not_null_matcher
-        searchlogic_suffix_condition '_not_nil', :expecting_args => 0, &not_null_matcher
+        searchlogic_suffix_condition '_not_null', &not_null_matcher
+        searchlogic_suffix_condition '_not_nil', &not_null_matcher
 
         searchlogic_prefix_condition 'descend_by_' do |column_name|
           order(column_name.to_sym => :desc)

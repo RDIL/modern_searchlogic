@@ -87,6 +87,10 @@ describe ModernSearchlogic::ColumnConditions do
       let!(:younger) { User.create!(:age => 14) }
       let!(:older) { User.create!(:age => 18) }
 
+      specify 'should have arity 0' do
+        expect { User.ascend_by_age(1) }.to raise_error ArgumentError
+      end
+
       context '#ascend_by_age' do
         specify do
           User.ascend_by_age.first.should == younger
