@@ -48,4 +48,11 @@ describe ModernSearchlogic::Searchable do
       end
     end
   end
+
+  context 'ordering' do
+    specify do
+      User.search(:order => :descend_by_created_at).to_sql.should ==
+        User.descend_by_created_at.to_sql
+    end
+  end
 end

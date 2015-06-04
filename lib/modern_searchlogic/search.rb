@@ -5,7 +5,11 @@ module ModernSearchlogic
 
       options.each do |k, v|
         k = k.to_sym
-        if model_class.valid_searchlogic_scope?(k)
+        if k.to_s == 'order'
+          if model_class.valid_searchlogic_scope?(v) && model_class.searchlogic_method_arity(v).zero?
+            underlying_scope = underlying_scope.__send__(v)
+          end
+        elsif model_class.valid_searchlogic_scope?(k)
           if model_class.searchlogic_method_arity(k).zero?
             unless v.to_s == 'false'
               underlying_scope = underlying_scope.__send__(k)
