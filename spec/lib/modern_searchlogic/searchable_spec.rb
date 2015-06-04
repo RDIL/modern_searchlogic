@@ -23,10 +23,12 @@ describe ModernSearchlogic::Searchable do
 
   context 'calling methods with 0 arity' do
     subject do
-      User.search(:descend_by_username => true).to_sql
+      User.search(:descend_by_username => true).to_sql.should == User.descend_by_username.to_sql
     end
 
-    it { should == User.descend_by_username.to_sql }
+    subject do
+      User.search(:descend_by_username => 'true').to_sql.should == User.descend_by_username.to_sql
+    end
 
     context 'on associations' do
       subject do
@@ -37,11 +39,13 @@ describe ModernSearchlogic::Searchable do
     end
 
     context 'with search option set to false' do
-      subject do
-        User.search(:descend_by_username => false).to_sql
+      specify do
+        User.search(:descend_by_username => false).to_sql.should == User.all.to_sql
       end
 
-      it { should == User.all.to_sql }
+      specify do
+        User.search(:descend_by_username => 'false').to_sql.should == User.all.to_sql
+      end
     end
   end
 end

@@ -23,7 +23,10 @@ module ModernSearchlogic
         method = method.to_sym
         raise ArgumentError, "Not a searchlogic scope" unless valid_searchlogic_scope?(method)
         dynamically_define_searchlogic_method(method)
-        _dynamically_defined_searchlogic_scopes[method][:arity]
+
+        _dynamically_defined_searchlogic_scopes[method] ?
+          _dynamically_defined_searchlogic_scopes[method][:arity] :
+          self.method(method).arity
       end
 
       private
