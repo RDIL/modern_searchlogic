@@ -1,13 +1,18 @@
 module ModernSearchlogic
   class Search
     def self.search(model_class, options = {})
-      underlying_scope = model_class
+      underlying_scope = model_class.all
 
       options.each do |k, v|
         k = k.to_sym
         if model_class.valid_searchlogic_scope?(k)
-          args = model_class.searchlogic_method_arity(k).zero? ? [k] : [k, v]
-          underlying_scope = underlying_scope.__send__(*args)
+          if model_class.searchlogic_method_arity(k).zero?
+            unless v.to_s == 'false'
+              underlying_scope = underlying_scope.__send__(k)
+            end
+          else
+            underlying_scope = underlying_scope.__send__(k, v)
+          end
         end
       end
 
