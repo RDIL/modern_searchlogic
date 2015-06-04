@@ -20,4 +20,20 @@ describe ModernSearchlogic::Searchable do
       end
     end
   end
+
+  context 'calling methods with 0 arity' do
+    subject do
+      User.search(:descend_by_username => true).to_sql
+    end
+
+    it { should == User.descend_by_username.to_sql }
+
+    context 'on associations' do
+      subject do
+        User.search(:descend_by_posts_title => true).to_sql
+      end
+
+      it { should == User.descend_by_posts_title.to_sql }
+    end
+  end
 end

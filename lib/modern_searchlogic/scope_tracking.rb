@@ -13,6 +13,8 @@ module ModernSearchlogic
       base.class_eval do
         class_attribute :_defined_scopes
         self._defined_scopes = Set.new
+        class_attribute :_dynamically_defined_searchlogic_scopes
+        self._dynamically_defined_searchlogic_scopes = {}
       end
     end
   end

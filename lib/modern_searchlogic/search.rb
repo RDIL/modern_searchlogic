@@ -6,7 +6,8 @@ module ModernSearchlogic
       options.each do |k, v|
         k = k.to_sym
         if model_class.valid_searchlogic_scope?(k)
-          underlying_scope = underlying_scope.__send__(k, v)
+          args = model_class.searchlogic_method_arity(k).zero? ? [k] : [k, v]
+          underlying_scope = underlying_scope.__send__(*args)
         end
       end
 

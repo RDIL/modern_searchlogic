@@ -6,8 +6,24 @@ module ModernSearchlogic
       end
 
       def valid_searchlogic_scope?(method)
-        !!searchlogic_column_condition_method_block(method.to_s) ||
+        _dynamically_defined_searchlogic_scopes.key?(method) ||
+          !!searchlogic_column_condition_method_block(method.to_s) ||
           _defined_scopes.include?(method)
+      end
+
+      def dynamically_define_searchlogic_method(method)
+        return true if singleton_class.method_defined?(method)
+        return false unless searchlogic_scope = searchlogic_column_condition_method_block(method.to_s)
+        singleton_class.__send__(:define_method, method, &searchlogic_scope[:block])
+        self._dynamically_defined_searchlogic_scopes = self._dynamically_defined_searchlogic_scopes.merge(method => searchlogic_scope)
+        true
+      end
+
+      def searchlogic_method_arity(method)
+        method = method.to_sym
+        raise ArgumentError, "Not a searchlogic scope" unless valid_searchlogic_scope?(method)
+        dynamically_define_searchlogic_method(method)
+        _dynamically_defined_searchlogic_scopes[method][:arity]
       end
 
       private
@@ -45,11 +61,13 @@ module ModernSearchlogic
           options, method_block = searchlogic_suffix_conditions.fetch(match[2])
           column_names = match[1].split('_or_')
 
-          return lambda do |*args|
-            validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
+          arity = calculate_arity(method_block)
+
+          return {:arity => arity, :block => lambda do |*args|
+            validate_argument_count!(arity, args.length) if arity >= 0
             arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
             where(arel_conditions)
-          end
+          end}
         end
       end
 
@@ -57,10 +75,13 @@ module ModernSearchlogic
         prefix_regexp = searchlogic_prefix_conditions.keys.join('|')
         if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
           method_block = searchlogic_prefix_conditions.fetch(match[1])
-          return lambda do |*args|
+
+          arity = calculate_arity(method_block)
+
+          return {:arity => arity, :block => lambda do |*args|
             validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
             instance_exec(match[2], *args, &method_block)
-          end
+          end}
         elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
           prefix, association_name, rest = match.to_a.drop(1)
 
@@ -75,10 +96,13 @@ module ModernSearchlogic
       end
 
       def searchlogic_association_finder_method(association, method_name)
-        if association.klass.valid_searchlogic_scope?(method_name.to_sym)
-          return lambda do |*args|
+        method_name = method_name.to_sym
+        if association.klass.valid_searchlogic_scope?(method_name)
+          arity = association.klass.searchlogic_method_arity(method_name)
+
+          return {:arity => arity, :block => lambda do |*args|
             joins(association.name).merge(association.klass.__send__(method_name, *args))
-          end
+          end}
         end
       end
 
@@ -106,9 +130,7 @@ module ModernSearchlogic
       end
 
       def method_missing(method, *args, &block)
-        return super unless method_block = searchlogic_column_condition_method_block(method.to_s)
-
-        singleton_class.__send__(:define_method, method, &method_block)
+        return super unless dynamically_define_searchlogic_method(method)
 
         __send__(method, *args, &block)
       end
@@ -137,6 +159,9 @@ module ModernSearchlogic
         end
       end
 
+      def calculate_arity(block)
+        block.arity > 0 ? block.arity - 1 : block.arity + 1
+      end
     end
 
     def self.included(base)
