@@ -6,7 +6,7 @@ module ModernSearchlogic
       end
 
       def valid_searchlogic_scope?(method)
-        _dynamically_defined_searchlogic_scopes.key?(method) ||
+        searchlogic_scope_dynamically_defined?(method) ||
           !!searchlogic_column_condition_method_block(method.to_s) ||
           _defined_scopes.include?(method)
       end
@@ -24,12 +24,16 @@ module ModernSearchlogic
         raise ArgumentError, "Not a searchlogic scope" unless valid_searchlogic_scope?(method)
         dynamically_define_searchlogic_method(method)
 
-        _dynamically_defined_searchlogic_scopes[method] ?
+        searchlogic_scope_dynamically_defined?(method) ?
           _dynamically_defined_searchlogic_scopes[method][:arity] :
           self.method(method).arity
       end
 
       private
+
+      def searchlogic_scope_dynamically_defined?(method)
+        _dynamically_defined_searchlogic_scopes.key?(method)
+      end
 
       def searchlogic_suffix_condition(suffix, options = {}, &method_block)
         searchlogic_suffix_conditions[suffix] = [options, method_block]
