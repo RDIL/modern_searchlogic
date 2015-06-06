@@ -6,6 +6,6 @@ describe ModernSearchlogic::ScopeProcedure do
   specify do
     Post.posts_for_home_page.to_sql.should ==
       Post.where(Post.arel_table[:published_at].not_eq(nil)).
-           order(:published_at => :desc).to_sql
+           order(Post.arel_table[:published_at].desc).to_sql
   end
 end

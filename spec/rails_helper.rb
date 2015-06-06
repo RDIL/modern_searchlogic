@@ -1,7 +1,10 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 ENV['RAILS_ENV'] ||= 'test'
 require 'spec_helper'
-require File.expand_path('../app/config/environment', __FILE__)
+require 'bundler/setup'
+require 'rails'
+rails_major_version = Rails.version.split('.').first.to_i
+require File.expand_path("../app_rails#{rails_major_version}/config/environment", __FILE__)
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
@@ -22,7 +25,10 @@ require 'rspec/rails'
 
 # Checks for pending migrations before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
-ActiveRecord::Migration.maintain_test_schema!
+
+if rails_major_version >= 4
+  ActiveRecord::Migration.maintain_test_schema!
+end
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

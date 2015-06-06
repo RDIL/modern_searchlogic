@@ -189,7 +189,7 @@ describe ModernSearchlogic::ColumnConditions do
     end
 
     specify 'custom scopes should work' do
-      user.posts.first.update!(:published_at => Time.now)
+      user.posts.first.update_attributes!(:published_at => Time.now)
       User.posts_published.first.should == user
     end
 

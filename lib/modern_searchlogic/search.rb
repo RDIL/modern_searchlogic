@@ -1,7 +1,7 @@
 module ModernSearchlogic
   class Search
     def self.search(model_class, options = {})
-      underlying_scope = model_class.all
+      underlying_scope = model_class.searchlogic_default_scope
 
       options.each do |k, v|
         k = k.to_sym

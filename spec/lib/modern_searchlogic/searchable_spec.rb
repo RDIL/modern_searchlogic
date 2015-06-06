@@ -40,11 +40,11 @@ describe ModernSearchlogic::Searchable do
 
     context 'with search option set to false' do
       specify do
-        User.search(:descend_by_username => false).to_sql.should == User.all.to_sql
+        User.search(:descend_by_username => false).to_sql.should == User.searchlogic_default_scope.to_sql
       end
 
       specify do
-        User.search(:descend_by_username => 'false').to_sql.should == User.all.to_sql
+        User.search(:descend_by_username => 'false').to_sql.should == User.searchlogic_default_scope.to_sql
       end
     end
   end

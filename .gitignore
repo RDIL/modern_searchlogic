@@ -1,8 +1,8 @@
 .bundle/
 log/*.log
 pkg/
-spec/app/db/*.sqlite3
-spec/app/db/*.sqlite3-journal
-spec/app/log/*.log
-spec/app/tmp/
-spec/app/.sass-cache
+spec/app_rails*/db/*.sqlite3
+spec/app_rails*/db/*.sqlite3-journal
+spec/app_rails*/log/*.log
+spec/app_rails*/tmp/
+spec/app_rails*/.sass-cache

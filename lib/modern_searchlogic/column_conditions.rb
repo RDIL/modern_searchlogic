@@ -221,11 +221,11 @@ module ModernSearchlogic
         searchlogic_suffix_condition '_not_nil', &not_null_matcher
 
         searchlogic_prefix_condition 'descend_by_' do |column_name|
-          order(column_name.to_sym => :desc)
+          order(arel_table[column_name].desc)
         end
 
         searchlogic_prefix_condition 'ascend_by_' do |column_name|
-          order(column_name.to_sym => :asc)
+          order(arel_table[column_name].asc)
         end
       end
     end
