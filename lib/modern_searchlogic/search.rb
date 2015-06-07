@@ -33,6 +33,10 @@ module ModernSearchlogic
 
     delegate :inspect, :to => :underlying_scope
 
+    def inspect
+      "#<#{self.class} scope=#{underlying_scope.inspect}>"
+    end
+
     private
 
     attr_reader :model_class, :underlying_scope
