@@ -55,4 +55,40 @@ describe ModernSearchlogic::Searchable do
         User.descend_by_created_at.to_sql
     end
   end
+
+  context 'reading and modifying the scope' do
+    subject do
+      User.search(
+        :order => :descend_by_created_at,
+        :age_gt => 7,
+        :username_eq => 'andrew'
+      )
+    end
+
+    its(:username_eq) { should == 'andrew' }
+    its(:age_gt) { should == 7 }
+    its(:order) { should == :descend_by_created_at }
+
+    specify do
+      subject.age_gt = 10
+      subject.age_gt.should == 10
+    end
+
+    specify do
+      new_search = subject.age_gt(10)
+      new_search.age_gt.should == 10
+      subject.age_gt.should == 7
+    end
+
+    specify do
+      subject.descend_by_updated_at = true
+
+      subject.to_sql.should ==
+        User.descend_by_created_at.
+             age_gt(7).
+             username_eq('andrew').
+             descend_by_updated_at.
+             to_sql
+    end
+  end
 end
