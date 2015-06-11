@@ -12,7 +12,7 @@ module ModernSearchlogic
       end
 
       def dynamically_define_searchlogic_method(method)
-        return true if singleton_class.method_defined?(method)
+        return true if searchlogic_scope_dynamically_defined?(method)
         return false unless searchlogic_scope = searchlogic_column_condition_method_block(method.to_s)
         singleton_class.__send__(:define_method, method, &searchlogic_scope[:block])
         self._dynamically_defined_searchlogic_scopes = self._dynamically_defined_searchlogic_scopes.merge(method => searchlogic_scope)
