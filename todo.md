@@ -1,0 +1,5 @@
+- shouldn't be able to do User.posts_destroy_all
+- shouldn't be able to do User.search(:destroy_all => true)
+- named_scopes and searchlogic scopes should both work for User.search type situations
+- class methods that return scopes should not
+- User.search(:descend_by_username => true)
