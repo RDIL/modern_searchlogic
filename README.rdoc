@@ -1,3 +1,7 @@
 = ModernSearchlogic
 
 This project rocks and uses MIT-LICENSE.
+
+= Notes
+
+`bundle exec appraisal rspec` to run specs
