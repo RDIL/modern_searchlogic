@@ -1,6 +1,6 @@
 # ModernSearchlogic
 
-This project rocks and uses MIT-LICENSE.
+Searchlogic for Rails 3+
 
 ## Getting Started
 
