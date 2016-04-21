@@ -1,8 +1,8 @@
-= ModernSearchlogic
+# ModernSearchlogic
 
 This project rocks and uses MIT-LICENSE.
 
-= Getting Started
+## Getting Started
 
 ```
 $ bundle
@@ -10,7 +10,7 @@ $ bundle exec appraisal bundle
 $ bundle exec appraisal rails-4 "cd spec/app_rails4/ && rake db:create db:migrate db:test:prepare"
 ```
 
-= Running Specs
+## Running Specs
 
 ```
 $ bundle exec appraisal rspec
