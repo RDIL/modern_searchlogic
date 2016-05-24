@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
   s.version     = ModernSearchlogic::VERSION
   s.authors     = ["Andrew Warner"]
   s.email       = ["wwarner.andrew@gmail.com"]
-  s.homepage    = "TODO"
-  s.summary     = "TODO: Summary of ModernSearchlogic."
-  s.description = "TODO: Description of ModernSearchlogic."
+  s.homepage    = "https://github.com/Genius/modern_searchlogic"
+  s.summary     = "Searchlogic, but for AREL"
+  s.description = "Because it's rampant through your codebase and you can't upgrade to rails 3 otherwise"
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
