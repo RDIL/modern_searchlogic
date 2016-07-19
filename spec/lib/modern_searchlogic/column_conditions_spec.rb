@@ -116,6 +116,20 @@ describe ModernSearchlogic::ColumnConditions do
         end
       end
     end
+
+    context 'polymorphic association' do
+      let(:user) { User.create!(username: 'Andrew') }
+      let(:user2) { User.create!(username: 'Alice') }
+      let(:post) { user.posts.create!(title: 'first post', body: 'great post') }
+
+      before do
+        user2.votes.create!(voteable: post, vote: 1)
+      end
+
+      specify do
+        Vote.voteable_eq(post).voter_id_eq(user2.id).first.voter.should == user2
+      end
+    end
   end
 
   context 'chaining' do
