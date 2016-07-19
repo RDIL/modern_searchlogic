@@ -104,7 +104,7 @@ module ModernSearchlogic
 
       def searchlogic_association_finder_method(association, method_name)
         method_name = method_name.to_sym
-        if association.klass.valid_searchlogic_scope?(method_name)
+        if !association.options[:polymorphic] && association.klass.valid_searchlogic_scope?(method_name)
           arity = association.klass.searchlogic_method_arity(method_name)
 
           return {:arity => arity, :block => lambda do |*args|
