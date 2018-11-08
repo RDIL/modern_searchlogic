@@ -2,11 +2,11 @@
 
 source "https://rubygems.org"
 
-gem "rails", "~> 4.2.0"
+gem "rails", "~> 4.2.10"
 gem "sqlite3"
 gem "rspec-rails"
 gem "rspec-its"
-gem "pg"
+gem "pg", "~> 0.11"
 gem "pry"
 
 gemspec :path => "../"
