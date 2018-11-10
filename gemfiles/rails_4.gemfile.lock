@@ -67,7 +67,7 @@ GEM
     minitest (5.11.3)
     nokogiri (1.8.5)
       mini_portile2 (~> 2.3.0)
-    pg (0.21.0)
+    pg (0.20.0)
     pry (0.12.0)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -138,7 +138,7 @@ PLATFORMS
 DEPENDENCIES
   appraisal
   modern_searchlogic!
-  pg (~> 0.11)
+  pg (= 0.20)
   pry
   rails (~> 4.2.10)
   rspec-its

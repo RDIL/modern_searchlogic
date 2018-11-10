@@ -4,7 +4,7 @@ appraise "rails-3" do
   gem "rspec-rails"
   gem "rspec-its"
   gem "test-unit"
-  gem 'pg', '~> 0.11'
+  gem 'pg', '= 0.20'
   gem "pry"
   gem "strong_parameters"
 end
@@ -14,7 +14,7 @@ appraise "rails-4" do
   gem "sqlite3"
   gem "rspec-rails"
   gem "rspec-its"
-  gem 'pg', '~> 0.11'
+  gem 'pg', '= 0.20'
   gem "pry"
 end
 
