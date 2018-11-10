@@ -108,3 +108,6 @@ PLATFORMS
 DEPENDENCIES
   appraisal
   modern_searchlogic!
+
+BUNDLED WITH
+   1.16.2
