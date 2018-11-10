@@ -21,3 +21,6 @@ end
 
 Bundler::GemHelper.install_tasks
 
+require 'wwtd/tasks'
+
+task :default => :wwtd

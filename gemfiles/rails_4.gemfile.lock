@@ -131,6 +131,7 @@ GEM
     thread_safe (0.3.6)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
+    wwtd (1.3.0)
 
 PLATFORMS
   ruby
@@ -144,6 +145,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   sqlite3
+  wwtd
 
 BUNDLED WITH
    1.16.2

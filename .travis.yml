@@ -19,5 +19,8 @@ matrix:
   - rvm: 2.5.3
     gemfile: gemfiles/rails_3.gemfile
 
-script: "bundle exec rspec"
+script:
+  - 'psql -lqt | cut -d \| -f 1 | grep -qw modern_searchlogic-app-test || bundle exec appraisal rails-5 "cd spec/app_rails5/ && rake db:create"'
+  - 'bundle exec appraisal rails-5 "cd spec/app_rails5/ && rake db:migrate db:test:prepare && rake db:environment:set RAILS_ENV=test"'
+  - "bundle exec rspec"
 bundler_args: ""
