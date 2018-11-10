@@ -1,0 +1,21 @@
+langauge: ruby
+sudo: false
+cache: bundler
+
+branches:
+  only: master
+
+rvm:
+  - 2.3.7
+  - 2.5.3
+
+gemfile:
+  - gemfiles/rails_3.gemfile
+  - gemfiles/rails_4.gemfile
+
+matrix:
+  exclude:
+  - rvm: 2.5.3
+    gemfile: gemfiles/rails_3.gemfile
+
+script: "bundle exec rspec"

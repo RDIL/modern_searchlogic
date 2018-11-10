@@ -13,5 +13,6 @@ $ bundle exec appraisal rails-4 "cd spec/app_rails4/ && rake db:create db:migrat
 ## Running Specs
 
 ```
-$ bundle exec appraisal rspec
+$ gem install wwtd
+$ wwtd
 ```
