@@ -1,5 +1,5 @@
 PATH
-  remote: ../
+  remote: ..
   specs:
     modern_searchlogic (0.0.1)
       rails (>= 3.2.14)
@@ -146,4 +146,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   1.13.7
+   1.16.2

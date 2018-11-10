@@ -9,4 +9,4 @@ gem "rspec-its"
 gem "pg", "~> 0.11"
 gem "pry"
 
-gemspec :path => "../"
+gemspec path: "../"

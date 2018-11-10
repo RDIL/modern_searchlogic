@@ -17,3 +17,13 @@ appraise "rails-4" do
   gem 'pg', '~> 0.11'
   gem "pry"
 end
+
+appraise "rails-5" do
+  gem "rails", "~> 5.2.1"
+  gem "listen"
+  gem "sqlite3"
+  gem "rspec-rails"
+  gem "rspec-its"
+  gem 'pg'
+  gem "pry"
+end
