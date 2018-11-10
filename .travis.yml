@@ -20,3 +20,4 @@ matrix:
     gemfile: gemfiles/rails_3.gemfile
 
 script: "bundle exec rspec"
+bundler_args: ""
