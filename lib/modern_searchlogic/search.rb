@@ -54,7 +54,7 @@ module ModernSearchlogic
               scope = scope.__send__(k)
             end
           else
-            scope = scope.__send__(k, *v)
+            scope = scope.__send__(k, *Array.wrap([v]))
           end
         end
       end
