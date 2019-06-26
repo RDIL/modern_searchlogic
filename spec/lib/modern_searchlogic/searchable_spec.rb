@@ -19,6 +19,14 @@ describe ModernSearchlogic::Searchable do
         user.should_not be_nil
       end
     end
+
+    context 'searches should handle nil column values' do
+      subject do
+        User.search(:username_eq => nil, :email_eq_any => ['d@z.com', 'f@q.com', 'p@l.edu']).to_sql
+      end
+
+      it { should == User.username_eq(nil).email_eq_any('d@z.com', 'f@q.com', 'p@l.edu').to_sql }
+    end
   end
 
   context 'calling methods with 0 arity' do
