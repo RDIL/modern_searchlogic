@@ -56,6 +56,8 @@ module ModernSearchlogic
           else
             scope = scope.__send__(k, *Array.wrap([v]))
           end
+        else
+          scope = scope.where(k => v)
         end
       end
 
