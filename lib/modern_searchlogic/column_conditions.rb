@@ -187,6 +187,8 @@ module ModernSearchlogic
         searchlogic_arel_alias :does_not_equal, :not_eq
         searchlogic_arel_alias :ne, :not_eq
         searchlogic_arel_alias :not_eq, :not_eq
+        searchlogic_arel_alias :not, :not_eq
+        searchlogic_arel_alias :is_not, :not_eq
         searchlogic_arel_alias :greater_than, :gt
         searchlogic_arel_alias :gt, :gt
         searchlogic_arel_alias :less_than, :lt
