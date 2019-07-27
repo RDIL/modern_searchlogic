@@ -102,6 +102,26 @@ module ModernSearchlogic
         end
       end
 
+      def searchlogic_column_boolean_match(method_name)
+        if match = method_name.match(/^not_(.*)/)
+          column_name = match[1]
+          if boolean_column?(column_name)
+            return {:arity => 0, :block => lambda do
+              where(column_name => false)
+            end}
+          end
+        elsif boolean_column?(method_name)
+          return {:arity => 0, :block => lambda do
+            where(method_name => true)
+          end}
+        end
+      end
+
+      def boolean_column?(name)
+        column = columns_hash[name.to_s]
+        column && column.type == :boolean
+      end
+
       def searchlogic_association_finder_method(association, method_name)
         method_name = method_name.to_sym
         if !association.options[:polymorphic] && association.klass.valid_searchlogic_scope?(method_name)
@@ -129,7 +149,8 @@ module ModernSearchlogic
         method = method.to_s
         searchlogic_prefix_match(method) ||
           searchlogic_suffix_condition_match(method) ||
-          searchlogic_association_suffix_match(method)
+          searchlogic_association_suffix_match(method) ||
+          searchlogic_column_boolean_match(method)
       end
 
       def column_names_regexp

@@ -215,4 +215,13 @@ describe ModernSearchlogic::ColumnConditions do
       expect { User.posts_is_like }.to raise_error NoMethodError
     end
   end
+
+  context 'boolean conditions' do
+    it 'should have scopes for boolean columns' do
+      inactive = User.create!(active: false)
+      active = User.create!(active: true)
+      User.active.all.should == [active]
+      User.not_active.all.should == [inactive]
+    end
+  end
 end

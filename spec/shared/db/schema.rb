@@ -37,6 +37,7 @@ ActiveRecord::Schema.define(version: 2016_07_19_181005) do
     t.datetime "updated_at", null: false
     t.integer "age", default: 0, null: false
     t.string "email", limit: 255
+    t.boolean "active"
   end
 
   create_table "votes", id: :serial, force: :cascade do |t|
