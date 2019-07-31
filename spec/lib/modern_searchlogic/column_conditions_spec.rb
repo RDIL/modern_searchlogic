@@ -38,6 +38,8 @@ describe ModernSearchlogic::ColumnConditions do
     it_should_behave_like 'a column condition', :username_is, {:username => 'Andrew'}, 'Andrew'
     it_should_behave_like 'a column condition', :username_does_not_equal, {:username => 'NotAndrew'}, 'Andrew'
     it_should_behave_like 'a column condition', :username_ne, {:username => 'NotAndrew'}, 'Andrew'
+    it_should_behave_like 'a column condition', :username_not, {:username => 'NotAndrew'}, 'Andrew'
+    it_should_behave_like 'a column condition', :username_is_not, {:username => 'NotAndrew'}, 'Andrew'
     it_should_behave_like 'a column condition', :username_like, {:username => 'Andrew Warner'}, 'warn'
     it_should_behave_like 'a column condition', :username_not_like, {:username => 'Andrew Renraw'}, 'warn'
     it_should_behave_like 'a column condition', :username_begins_with, {:username => 'Andrew Warner'}, 'And'
