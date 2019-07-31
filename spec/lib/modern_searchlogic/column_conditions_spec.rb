@@ -32,6 +32,40 @@ describe ModernSearchlogic::ColumnConditions do
     end
   end
 
+  shared_examples 'an :id column condition' do |finder_method, options|
+    options.fetch(:args) { raise ArgumentError, "Must provide :args when using this shared example group." }
+    options.fetch(:expected) { raise ArgumentError, "Must provide :expected when using this shared example group." }
+
+    let(:args) { options[:args].respond_to?(:call) ? instance_exec(&options[:args]) : options[:args] }
+    let(:expected) { options[:expected].respond_to?(:call) ? instance_exec(&options[:expected]) : options[:expected] }
+
+    describe "#{finder_method}" do
+      specify "can take an ActiveRecord object" do
+        User.__send__(finder_method, *args).should =~ expected
+      end
+    end
+  end
+
+  context 'id column methods' do
+    let!(:user) { User.create!(username: 'the user') }
+    let!(:other_user) { User.create!(username: 'other user')}
+
+    it_should_behave_like 'an :id column condition', :id_equals, args: -> { user }, expected: -> { [user] }
+    it_should_behave_like 'an :id column condition', :id_eq, args: -> { user }, expected: -> { [user] }
+    it_should_behave_like 'an :id column condition', :id_is, args: -> { user }, expected: -> { [user] }
+    it_should_behave_like 'an :id column condition', :id_does_not_equal, args: -> { user }, expected: -> { [other_user] }
+    it_should_behave_like 'an :id column condition', :id_ne, args: -> { user }, expected: -> { [other_user] }
+  end
+
+  context 'id column methods that take collections' do
+    let!(:user) { User.create!(username: 'the user') }
+    let!(:other_user) { User.create!(username: 'other user')}
+
+    it_should_behave_like 'an :id column condition', :id_in, args: -> { [user, other_user] }, expected: -> { [user, other_user] }
+    it_should_behave_like 'an :id column condition', :id_ne, args: -> { [user] }, expected: -> { [other_user] }
+    it_should_behave_like 'an :id column condition', :id_not_in, args: -> { [user] }, expected: -> { [other_user] }
+  end
+
   context 'column_equals methods' do
     it_should_behave_like 'a column condition', :username_equals, {:username => 'Andrew'}, 'Andrew'
     it_should_behave_like 'a column condition', :username_eq, {:username => 'Andrew'}, 'Andrew'
