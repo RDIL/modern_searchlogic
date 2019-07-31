@@ -99,4 +99,18 @@ describe ModernSearchlogic::Searchable do
              to_sql
     end
   end
+
+  context 'handling non-searchlogic conditions ' do
+    let!(:andrew){UserWithDefaultScope.create!(username: 'andrew', email: 'andrew@test.org')}
+    let!(:nate){UserWithDefaultScope.create!(username: 'nate',  email: 'nate@test.org')}
+
+    it "searches with a non-searchlogic condition" do
+      UserWithDefaultScope.search(username: 'nate').all.should == [nate]
+    end
+
+    it "searches with a searchlogic condition and a non-searchlogic condition" do
+      UserWithDefaultScope.search(username_eq: 'andrew', email: 'andrew@test.org').all.should == [andrew]
+      UserWithDefaultScope.search(username_eq: 'nate', email: 'foo@test.org').all.should == []
+    end
+  end
 end
