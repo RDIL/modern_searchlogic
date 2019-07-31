@@ -10,6 +10,7 @@ default: &default
   port: <%= ENV['BOXEN_POSTGRESQL_PORT'] || 5432 %>
   pool: 5
   timeout: 5000
+  username: 'postgres'
 
 development:
   <<: *default

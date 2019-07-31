@@ -70,11 +70,14 @@ module ModernSearchlogic
 
           arity = calculate_arity(method_block)
 
-          return {:arity => arity, :block => lambda do |*args|
-            validate_argument_count!(arity, args.length) if arity >= 0
-            arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
-            where(arel_conditions)
-          end}
+          {
+            arity: arity,
+            block: lambda do |*args|
+              validate_argument_count!(arity, args.length) if arity >= 0
+              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
+              where(arel_conditions)
+            end
+          }
         end
       end
 
@@ -85,10 +88,13 @@ module ModernSearchlogic
 
           arity = calculate_arity(method_block)
 
-          return {:arity => arity, :block => lambda do |*args|
-            validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
-            instance_exec(match[2], *args, &method_block)
-          end}
+          {
+            arity: arity,
+            block: lambda do |*args|
+              validate_argument_count!(method_block.arity - 1, args.length) if method_block.arity >= 1
+              instance_exec(match[2], *args, &method_block)
+            end
+          }
         elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
           prefix, association_name, rest = match.to_a.drop(1)
 
@@ -106,14 +112,10 @@ module ModernSearchlogic
         if match = method_name.match(/^not_(.*)/)
           column_name = match[1]
           if boolean_column?(column_name)
-            return {:arity => 0, :block => lambda do
-              where(column_name => false)
-            end}
+            {arity: 0, block: lambda { where(column_name => false) }}
           end
         elsif boolean_column?(method_name)
-          return {:arity => 0, :block => lambda do
-            where(method_name => true)
-          end}
+          {arity: 0, block: lambda { where(method_name => true)}}
         end
       end
 
@@ -127,9 +129,12 @@ module ModernSearchlogic
         if !association.options[:polymorphic] && association.klass.valid_searchlogic_scope?(method_name)
           arity = association.klass.searchlogic_method_arity(method_name)
 
-          return {:arity => arity, :block => lambda do |*args|
-            joins(association.name).merge(association.klass.__send__(method_name, *args))
-          end}
+          {
+            arity: arity,
+            block: lambda do |*args|
+              joins(association.name).merge(association.klass.__send__(method_name, *args))
+            end
+          }
         end
       end
 
