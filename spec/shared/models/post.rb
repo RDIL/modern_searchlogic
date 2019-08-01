@@ -12,4 +12,5 @@ class Post < ActiveRecord::Base
   end
 
   scope_procedure :posts_for_home_page, lambda { Post.published.descend_by_published_at }
+  scope_procedure :published_grouped_by_user, lambda { published.group_by(&:user) }
 end
