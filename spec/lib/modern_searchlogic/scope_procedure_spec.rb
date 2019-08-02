@@ -38,4 +38,8 @@ describe ModernSearchlogic::ScopeProcedure do
       )
     end
   end
+
+  it 'can combine associations and scope procedures' do
+    User.posts_posts_for_home_page.to_a.should == Post.published.descend_by_published_at.map(&:user)
+  end
 end
