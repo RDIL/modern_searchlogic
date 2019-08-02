@@ -2,25 +2,32 @@ langauge: ruby
 sudo: false
 cache: bundler
 
-branches:
-  only: master
-
-rvm:
-  - 2.3.7
-  - 2.5.3
-
-gemfile:
-  - gemfiles/rails_3.gemfile
-  - gemfiles/rails_4.gemfile
-  - gemfiles/rails_5.gemfile
-
 matrix:
-  exclude:
-  - rvm: 2.5.3
+  include:
+  - rvm: 2.3.7
     gemfile: gemfiles/rails_3.gemfile
+    env: TEST_APP_DIR=spec/app_rails3
+  - rvm: 2.3.7
+    gemfile: gemfiles/rails_4.gemfile
+    env: TEST_APP_DIR=spec/app_rails4
+  - rvm: 2.3.7
+    gemfile: gemfiles/rails_5.gemfile
+    env: TEST_APP_DIR=spec/app_rails5
+  - rvm: 2.5.5
+    gemfile: gemfiles/rails_4.gemfile
+    env: TEST_APP_DIR=spec/app_rails4
+  - rvm: 2.5.5
+    gemfile: gemfiles/rails_5.gemfile
+    env: TEST_APP_DIR=spec/app_rails5
+
 
 script:
-  - 'psql -lqt | cut -d \| -f 1 | grep -qw modern_searchlogic-app-test || bundle exec appraisal rails-5 "cd spec/app_rails5/ && rake db:create"'
-  - 'bundle exec appraisal rails-5 "cd spec/app_rails5/ && rake db:migrate db:test:prepare && rake db:environment:set RAILS_ENV=test"'
-  - "bundle exec rspec"
+  - export APP_DIR=`pwd`
+  - bundle install
+  - cd $TEST_APP_DIR
+  - bundle exec rake db:create:all
+  - bundle exec rake db:environment:set RAILS_ENV=test
+  - bundle exec rake db:schema:load
+  - cd $APP_DIR
+  - bundle exec rspec
 bundler_args: ""
