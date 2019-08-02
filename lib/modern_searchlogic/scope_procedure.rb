@@ -6,7 +6,7 @@ module ModernSearchlogic
           define_singleton_method name do |*args|
             case options
             when Symbol
-              send(options)
+              public_send(options, *args)
             else
               options.call(*args)
             end
