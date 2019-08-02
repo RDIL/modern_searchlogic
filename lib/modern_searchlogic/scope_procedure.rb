@@ -3,7 +3,6 @@ module ModernSearchlogic
     def self.included(base)
       base.singleton_class.class_eval do
         def scope_procedure(name, options = nil)
-          self._defined_scopes << name.to_sym
           define_singleton_method name do |*args|
             case options
             when Symbol
@@ -12,6 +11,7 @@ module ModernSearchlogic
               options.call(*args)
             end
           end
+          self._defined_scopes << name.to_sym
         end
       end
     end
