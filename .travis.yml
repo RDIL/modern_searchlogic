@@ -2,6 +2,10 @@ langauge: ruby
 sudo: false
 cache: bundler
 
+before_install:
+  - gem uninstall bundler -x || gem uninstall bundler -a || true
+  - gem install -v 1.16.2 bundler --no-rdoc --no-ri
+
 matrix:
   include:
   - rvm: 2.3.7
