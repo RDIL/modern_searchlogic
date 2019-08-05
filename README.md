@@ -1,4 +1,7 @@
+
 # ModernSearchlogic
+
+[![Build Status](https://travis-ci.org/Genius/modern_searchlogic.svg?branch=master)](https://travis-ci.org/Genius/modern_searchlogic)
 
 Searchlogic for Rails 3+
 
