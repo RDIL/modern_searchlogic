@@ -43,8 +43,18 @@ module ModernSearchlogic
         searchlogic_prefix_conditions[prefix] = method_block
       end
 
+      def searchlogic_extract_arel_compatible_value(value)
+        if value.respond_to?(:map) && !value.acts_like?(:string)
+          value.map { |v| searchlogic_extract_arel_compatible_value(v) }
+        elsif value.is_a?(ActiveRecord::Base)
+          value.id
+        else
+          value
+        end
+      end
+
       def searchlogic_arel_alias(searchlogic_suffix, arel_method, options = {})
-        value_mapper = options.fetch(:map_value, ->(x) { x })
+        value_mapper = options.fetch(:map_value, -> (x) { searchlogic_extract_arel_compatible_value(x) })
 
         searchlogic_suffix_condition "_#{searchlogic_suffix}", options do |column_name, *args|
           values = coerce_and_validate_args_for_arel_aliases!(args, options)
