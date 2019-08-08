@@ -35,3 +35,6 @@ script:
   - cd $APP_DIR
   - bundle exec rspec
 bundler_args: ""
+
+services:
+  - postgresql
