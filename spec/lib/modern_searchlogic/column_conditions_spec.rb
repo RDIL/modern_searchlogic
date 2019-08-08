@@ -203,18 +203,14 @@ describe ModernSearchlogic::ColumnConditions do
       context 'with "in" conditions' do
         specify { User.username_in('foobaz', 'William Andrew Warner').first.should == user }
         specify { User.username_in(['foobaz', 'William Andrew Warner']).first.should == user }
+        specify { User.active_in([false, nil]).first.should == user }
 
         specify { User.username_in([]).first.should be_nil }
-        specify { User.username_in.first.should be_nil }
-        specify { User.username_not_in.ascend_by_id.first.should == user }
-
-        specify do
-          User.username_or_email_in_all(['William Andrew Warner', 'warnand'], ['willandwar@gmail.com', 'William Andrew Warner']).first.should == user
-        end
-
-        specify do
-          User.username_or_email_in_any(['foo', 'bar'], ['willandwar@gmail.com', 'foobaz@biz.edu']).first.should == user
-        end
+        specify { expect { User.username_in.first.should be_nil.to raise_error } }
+        specify { expect { User.username_not_in.ascend_by_id }.to raise_error }
+        specify { User.username_not_in(["John Smith", "Jane Smith", "Jorah Mormont"]).first.should == user}
+        specify { User.username_not_in([nil]).first.should == user}
+        specify { User.username_not_in([nil, 'William Andrew Warner']).include?(user).should == false}
       end
     end
   end
