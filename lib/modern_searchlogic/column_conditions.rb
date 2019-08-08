@@ -250,11 +250,7 @@ module ModernSearchlogic
           where(column => values)
         end
         searchlogic_active_record_alias :not_in, :takes_array_args => true do |column, values|
-          if values.include?(nil)
-            query_not_in_with_nil(column,values)
-          else
-            where("#{column} NOT IN (?)", values)
-          end
+          query_not_in_with_nil(column,values)
         end
         searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
         searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
@@ -288,11 +284,15 @@ module ModernSearchlogic
         end
 
         def self.query_not_in_with_nil(column,values)
-          values = values.reject(&:nil?)
-          if values.empty?
-            where("#{column} IS NOT NULL")
+          if values.include?(nil)
+            values = values.reject(&:nil?)
+            if values.empty?
+              where("#{column} IS NOT NULL")
+            else
+              where("#{column} NOT IN (?) AND #{column} IS NOT NULL", values)
+            end
           else
-            where("#{column} NOT IN (?) AND #{column} IS NOT NULL", values)
+            where("#{column} NOT IN (?)", values)
           end
         end
       end

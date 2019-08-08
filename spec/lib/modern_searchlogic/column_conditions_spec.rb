@@ -206,8 +206,8 @@ describe ModernSearchlogic::ColumnConditions do
         specify { User.active_in([false, nil]).first.should == user }
 
         specify { User.username_in([]).first.should be_nil }
-        specify { expect { User.username_in.first.should be_nil.to raise_error } }
-        specify { expect { User.username_not_in.ascend_by_id }.to raise_error }
+        specify { expect { User.username_in.first.should be_nil.to raise_error ArgumentError} }
+        specify { expect { User.username_not_in.ascend_by_id }.to raise_error ArgumentError}
         specify { User.username_not_in(["John Smith", "Jane Smith", "Jorah Mormont"]).first.should == user}
         specify { User.username_not_in([nil]).first.should == user}
         specify { User.username_not_in([nil, 'William Andrew Warner']).include?(user).should == false}
