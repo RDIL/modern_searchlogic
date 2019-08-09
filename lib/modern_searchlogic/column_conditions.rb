@@ -74,9 +74,8 @@ module ModernSearchlogic
 
       def searchlogic_active_record_alias(searchlogic_suffix, options = {}, &block)
         searchlogic_suffix_condition "_#{searchlogic_suffix}" do |column_name, *args|
-          raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
-
-          values = coerce_and_validate_args_for_arel_aliases!(args, options)
+          values = coerce_and_validate_args_for_active_record_aliases(searchlogic_suffix, args)
+          values = searchlogic_extract_arel_compatible_value(values)
           instance_exec(column_name, values, &block)
         end
       end
@@ -94,7 +93,7 @@ module ModernSearchlogic
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
               arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
-              if arel_conditions.class == ActiveRecord::Relation
+              if arel_conditions.is_a?(ActiveRecord::Relation)
                 arel_conditions
               else
                 where(arel_conditions)
@@ -209,6 +208,24 @@ module ModernSearchlogic
         args.first
       end
 
+      def coerce_and_validate_args_for_active_record_aliases(searchlogic_suffix, args)
+        raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
+
+        if searchlogic_suffix == :in
+          has_nil = args.include?(nil)
+          args = args.flatten.compact
+          subs = [args]
+          if has_nil
+            subs << nil
+          end
+          subs
+        elsif searchlogic_suffix == :not_in
+          args.flatten
+        else
+          raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed"
+        end
+      end
+
       def validate_argument_count!(expected_args, actual_args)
         if expected_args != actual_args
           raise ArgumentError, "wrong number of arguments (#{actual_args} for #{expected_args})"
@@ -250,8 +267,10 @@ module ModernSearchlogic
           where(column => values)
         end
         searchlogic_active_record_alias :not_in, :takes_array_args => true do |column, values|
-          query_not_in_with_nil(column,values)
+          query = values.map { "#{arel_table.name}.#{column} != ?" }.join(" AND ")
+          where(query, *values)
         end
+
         searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
         searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
         searchlogic_arel_alias :ends_with, :matches, :map_value => -> (val) { "%#{val}" }
@@ -281,19 +300,6 @@ module ModernSearchlogic
 
         searchlogic_prefix_condition 'ascend_by_' do |column_name|
           order(arel_table[column_name].asc)
-        end
-
-        def self.query_not_in_with_nil(column,values)
-          if values.include?(nil)
-            values = values.reject(&:nil?)
-            if values.empty?
-              where("#{column} IS NOT NULL")
-            else
-              where("#{column} NOT IN (?) AND #{column} IS NOT NULL", values)
-            end
-          else
-            where("#{column} NOT IN (?)", values)
-          end
         end
       end
     end
