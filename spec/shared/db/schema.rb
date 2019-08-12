@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_07_27_005829) do
+ActiveRecord::Schema.define(:version => 20190812194128) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(version: 2019_07_27_005829) do
     t.integer "age", default: 0, null: false
     t.string "email", limit: 255
     t.boolean "active"
+    t.integer  "backup_user_id"
   end
 
   create_table "votes", id: :serial, force: :cascade do |t|

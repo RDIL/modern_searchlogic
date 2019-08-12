@@ -170,7 +170,7 @@ describe ModernSearchlogic::ColumnConditions do
 
   context 'chaining' do
     let!(:andrew) { User.create!(:username => 'William Andrew Warner', :age => 28, :email => 'willandwar@gmail.com') }
-    let!(:jane){ User.create!(:username => 'Jane Smith', :age => 23) }
+    let!(:jane){ User.create!(:username => 'Jane Smith', :age => 23, :backup_user_id => 4321) }
     let!(:john){ User.create!(:username => 'John Smith', :age => 24) }
     let!(:jorah){ User.create!(:username => 'Jorah Mormont', :age => 51) }
     let!(:null_username){ User.create! }
@@ -207,6 +207,9 @@ describe ModernSearchlogic::ColumnConditions do
         specify { User.username_in('foobaz', 'William Andrew Warner').should == [andrew] }
         specify { User.username_in(['foobaz', 'William Andrew Warner']).should == [andrew] }
         specify { User.username_not_in(["John Smith", "Jane Smith", "Jorah Mormont"]).should == [andrew]}
+        specify {  User.username_or_email_in("foo", "willandwar@gmail.com").should == [andrew] }
+        specify {  User.username_or_email_in("John Smith", "willandwar@gmail.com").should == [andrew, john] }
+        specify { User.id_or_backup_user_id_in([User.first, 4321]).should == [andrew, jane] }
 
         context 'preserving searchlogic2 behavior: nil passed as argument will be used in query' do
           specify { User.username_in(['William Andrew Warner', "Jane Smith"], nil).should == [andrew, jane, null_username] }
