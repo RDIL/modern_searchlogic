@@ -92,11 +92,11 @@ module ModernSearchlogic
             arity: arity,
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
-              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
-              if arel_conditions.is_a?(ActiveRecord::Relation)
-                arel_conditions
+              condition = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
+              if condition.is_a?(ActiveRecord::Relation)
+                condition
               else
-                where(arel_conditions)
+                where(condition)
               end
             end
           }
