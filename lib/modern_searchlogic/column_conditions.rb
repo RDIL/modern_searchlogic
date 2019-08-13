@@ -93,13 +93,12 @@ module ModernSearchlogic
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
               partial_queries = column_names.map do |n|
-
-                query = instance_exec(n, *args, &method_block)
-                if query.respond_to?(:where_values) # Rails 3, 4
+                query = unscoped { instance_exec(n, *args, &method_block) }
+                if query.respond_to?(:where_values)
                   query.where_values
-                elsif query.respond_to?(:where_clause) # Rails 5
+                elsif query.respond_to?(:where_clause)
                   query.where_clause&.ast
-                else # Arel
+                else
                   query
                 end
               end
