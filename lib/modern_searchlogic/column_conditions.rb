@@ -94,10 +94,10 @@ module ModernSearchlogic
               validate_argument_count!(arity, args.length) if arity >= 0
               partial_queries = column_names.map do |n|
                 query = unscoped { instance_exec(n, *args, &method_block) }
-                if query.respond_to?(:where_values)
-                  query.where_values
-                elsif query.respond_to?(:where_clause)
+                if ActiveRecord::VERSION::MAJOR >= 5 && query.respond_to?(:where_clause)
                   query.where_clause&.ast
+                elsif [3, 4].include?(ActiveRecord::VERSION::MAJOR) && query.respond_to?(:where_values)
+                  query.where_values
                 else
                   query
                 end
