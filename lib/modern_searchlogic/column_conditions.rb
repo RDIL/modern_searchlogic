@@ -74,9 +74,14 @@ module ModernSearchlogic
 
       def searchlogic_active_record_alias(searchlogic_suffix, options = {}, &block)
         searchlogic_suffix_condition "_#{searchlogic_suffix}" do |column_name, *args|
-          values = coerce_and_validate_args_for_active_record_aliases(searchlogic_suffix, args)
-          values = searchlogic_extract_arel_compatible_value(values)
-          instance_exec(column_name, values, &block)
+          raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
+          raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed" unless [:in, :not_in].include?(searchlogic_suffix)
+
+          if ActiveRecord::VERSION::MAJOR >= 5
+            instance_exec(column_name, args, &block).where_clause&.ast
+          elsif [3, 4].include?(ActiveRecord::VERSION::MAJOR)
+            instance_exec(column_name, args, &block).where_values
+          end
         end
       end
 
@@ -92,17 +97,10 @@ module ModernSearchlogic
             arity: arity,
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
-              partial_queries = column_names.map do |n|
-                query = unscoped { instance_exec(n, *args, &method_block) }
-                if ActiveRecord::VERSION::MAJOR >= 5 && query.respond_to?(:where_clause)
-                  query.where_clause&.ast
-                elsif [3, 4].include?(ActiveRecord::VERSION::MAJOR) && query.respond_to?(:where_values)
-                  query.where_values
-                else
-                  query
-                end
+              unscoped_arel_nodes = column_names.map do |n|
+                unscoped { instance_exec(n, *args, &method_block) }
               end
-              where(partial_queries.flatten.reduce(:or))
+              where(unscoped_arel_nodes.flatten.reduce(:or))
             end
           }
         end
@@ -213,24 +211,6 @@ module ModernSearchlogic
         args.first
       end
 
-      def coerce_and_validate_args_for_active_record_aliases(searchlogic_suffix, args)
-        raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
-
-        if searchlogic_suffix == :in
-          has_nil = args.include?(nil)
-          args = args.flatten.compact
-          subs = [args]
-          if has_nil
-            subs << nil
-          end
-          subs
-        elsif searchlogic_suffix == :not_in
-          args.flatten
-        else
-          raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed"
-        end
-      end
-
       def validate_argument_count!(expected_args, actual_args)
         if expected_args != actual_args
           raise ArgumentError, "wrong number of arguments (#{actual_args} for #{expected_args})"
@@ -269,10 +249,17 @@ module ModernSearchlogic
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
         searchlogic_active_record_alias :in, :takes_array_args => true do |column, values|
-          where(column => values)
+          has_nil = values.include?(nil)
+          values = values.flatten.compact
+          subs = [values]
+          if has_nil
+            subs << nil
+          end
+          where(column => searchlogic_extract_arel_compatible_value(subs))
         end
         searchlogic_active_record_alias :not_in, :takes_array_args => true do |column, values|
-          query = values.map { "#{arel_table.name}.#{column} != ?" }.join(" AND ")
+          values = searchlogic_extract_arel_compatible_value(values.flatten)
+          query = values.map { "#{connection.quote_table_name(arel_table.name)}.#{connection.quote_column_name(column)} != ?" }.join(" AND ")
           where(query, *values)
         end
 

@@ -170,10 +170,10 @@ describe ModernSearchlogic::ColumnConditions do
 
   context 'chaining' do
     let!(:andrew) { User.create!(:username => 'William Andrew Warner', :age => 28, :email => 'willandwar@gmail.com') }
-    let!(:jane){ User.create!(:username => 'Jane Smith', :age => 23, :backup_user_id => 4321) }
-    let!(:john){ User.create!(:username => 'John Smith', :age => 24) }
-    let!(:jorah){ User.create!(:username => 'Jorah Mormont', :age => 51) }
-    let!(:null_username){ User.create! }
+    let!(:jane) { User.create!(:username => 'Jane Smith', :age => 23, :backup_user_id => 4321) }
+    let!(:john) { User.create!(:username => 'John Smith', :age => 24) }
+    let!(:jorah) { User.create!(:username => 'Jorah Mormont', :age => 51) }
+    let!(:null_username) { User.create! }
 
     specify 'chaining scopes should work' do
       User.age_gt(25).username_like('andr').first.should == andrew
