@@ -77,10 +77,11 @@ module ModernSearchlogic
           raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
           raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed" unless [:in, :not_in].include?(searchlogic_suffix)
 
+          relation = unscoped { instance_exec(column_name, args, &block) }
           if ActiveRecord::VERSION::MAJOR >= 5
-            instance_exec(column_name, args, &block).where_clause&.ast
+            relation.where_clause&.ast
           elsif [3, 4].include?(ActiveRecord::VERSION::MAJOR)
-            instance_exec(column_name, args, &block).where_values
+            relation.where_values.reduce(&:and)
           end
         end
       end
@@ -97,10 +98,10 @@ module ModernSearchlogic
             arity: arity,
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
-              unscoped_arel_nodes = column_names.map do |n|
-                unscoped { instance_exec(n, *args, &method_block) }
+              arel_nodes = column_names.map do |n|
+                instance_exec(n, *args, &method_block)
               end
-              where(unscoped_arel_nodes.flatten.reduce(:or))
+              where(arel_nodes.reduce(:or))
             end
           }
         end
