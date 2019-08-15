@@ -248,7 +248,7 @@ module ModernSearchlogic
         searchlogic_arel_alias :gte, :gteq
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
-        searchlogic_active_record_alias :in, :takes_array_args => true do |column, values|
+        searchlogic_active_record_alias :in do |column, values|
           has_nil = values.include?(nil)
           values = values.flatten.compact
           subs = [values]
@@ -257,7 +257,7 @@ module ModernSearchlogic
           end
           where(column => searchlogic_extract_arel_compatible_value(subs))
         end
-        searchlogic_active_record_alias :not_in, :takes_array_args => true do |column, values|
+        searchlogic_active_record_alias :not_in do |column, values|
           values = searchlogic_extract_arel_compatible_value(values.flatten)
           query = values.map { "#{connection.quote_table_name(arel_table.name)}.#{connection.quote_column_name(column)} != ?" }.join(" AND ")
           where(query, *values)
