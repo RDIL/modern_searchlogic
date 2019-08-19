@@ -169,31 +169,29 @@ describe ModernSearchlogic::ColumnConditions do
   end
 
   context 'chaining' do
-    let!(:user) { User.create!(:username => 'William Andrew Warner', :age => 28, :email => 'willandwar@gmail.com') }
-
-    before do
-      User.create!(:username => 'Jane Smith', :age => 23)
-      User.create!(:username => 'John Smith', :age => 24)
-      User.create!(:username => 'Jorah Mormont', :age => 51)
-    end
+    let!(:andrew) { User.create!(:username => 'William Andrew Warner', :age => 28, :email => 'willandwar@gmail.com') }
+    let!(:jane) { User.create!(:username => 'Jane Smith', :age => 23, :backup_user_id => 4321) }
+    let!(:john) { User.create!(:username => 'John Smith', :age => 24) }
+    let!(:jorah) { User.create!(:username => 'Jorah Mormont', :age => 51) }
+    let!(:null_username) { User.create! }
 
     specify 'chaining scopes should work' do
-      User.age_gt(25).username_like('andr').first.should == user
+      User.age_gt(25).username_like('andr').first.should == andrew
     end
 
     context 'using or' do
       specify do
-        User.username_or_email_like('andwar').first.should == user
+        User.username_or_email_like('andwar').first.should == andrew
       end
     end
 
     context 'using _any and _all suffixes' do
       specify do
-        User.username_or_email_like_all('andwar', 'gmail').first.should == user
+        User.username_or_email_like_all('andwar', 'gmail').first.should == andrew
       end
 
       specify do
-        User.username_or_email_like_any('foobaz', 'warner').first.should == user
+        User.username_or_email_like_any('foobaz', 'warner').first.should == andrew
       end
 
       specify { expect { User.username_or_email_like_any([]).first.should be_nil }.to raise_error ArgumentError }
@@ -201,19 +199,40 @@ describe ModernSearchlogic::ColumnConditions do
       specify { expect { User.username_or_email_not_like_any }.to raise_error ArgumentError }
 
       context 'with "in" conditions' do
-        specify { User.username_in('foobaz', 'William Andrew Warner').first.should == user }
-        specify { User.username_in(['foobaz', 'William Andrew Warner']).first.should == user }
+        specify { expect { User.username_in.first.to raise_error ArgumentError} }
+        specify { expect { User.username_not_in.ascend_by_id }.to raise_error ArgumentError}
 
-        specify { User.username_in([]).first.should be_nil }
-        specify { User.username_in.first.should be_nil }
-        specify { User.username_not_in.ascend_by_id.first.should == user }
+        specify { User.username_in([]).should == [] }
 
-        specify do
-          User.username_or_email_in_all(['William Andrew Warner', 'warnand'], ['willandwar@gmail.com', 'William Andrew Warner']).first.should == user
+        specify { User.username_in('foobaz', 'William Andrew Warner').should == [andrew] }
+        specify { User.username_in(['foobaz', 'William Andrew Warner']).should == [andrew] }
+        specify { User.username_not_in(["John Smith", "Jane Smith", "Jorah Mormont"]).should == [andrew]}
+        specify {  User.username_or_email_in("foo", "willandwar@gmail.com").should == [andrew] }
+        specify {  User.username_or_email_in("John Smith", "willandwar@gmail.com").should == [andrew, john] }
+        specify { User.id_or_backup_user_id_in([User.first, 4321]).should == [andrew, jane] }
+
+        context 'preserving searchlogic2 behavior: nil passed as argument will be used in query' do
+          specify { User.username_in(['William Andrew Warner', "Jane Smith"], nil).should == [andrew, jane, null_username] }
+          specify { User.username_in('William Andrew Warner', nil).should == [andrew, null_username] }
+          specify { User.username_in(nil).should == [null_username] }
+          specify { User.username_in(nil, nil).should == [null_username] }
         end
 
-        specify do
-          User.username_or_email_in_any(['foo', 'bar'], ['willandwar@gmail.com', 'foobaz@biz.edu']).first.should == user
+        context 'preserving searchlogic2 behavior: nil passed as an array value will be ignored' do
+          specify { User.username_in(['William Andrew Warner', "Jane Smith"], ["John Smith", nil]).should == [andrew, jane, john] }
+          specify { User.username_in(['William Andrew Warner', nil]).should == [andrew] }
+          specify { User.username_in([nil]).should be == [] }
+          specify { User.username_in([nil],[nil]).should be == [] }
+        end
+
+        context 'preserving searchlogic2 behavior: any not_in searches with nil return no results' do
+          specify { User.username_not_in(['William Andrew Warner', "Jane Smith"], nil).should == [] }
+          specify { User.username_not_in(['William Andrew Warner', "Jane Smith"], ["John Smith", nil]).should == [] }
+          specify { User.username_not_in(['William Andrew Warner', nil]).should == [] }
+          specify { User.username_not_in('William Andrew Warner', nil).should == [] }
+          specify { User.username_not_in(nil).should == [] }
+          specify { User.username_not_in([nil]).should == [] }
+          specify { User.username_not_in([nil],[nil]).should == [] }
         end
       end
     end

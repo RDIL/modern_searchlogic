@@ -72,6 +72,20 @@ module ModernSearchlogic
         end
       end
 
+      def searchlogic_active_record_alias(searchlogic_suffix, options = {}, &block)
+        searchlogic_suffix_condition "_#{searchlogic_suffix}" do |column_name, *args|
+          raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
+          raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed" unless [:in, :not_in].include?(searchlogic_suffix)
+
+          relation = unscoped { instance_exec(column_name, args, &block) }
+          if ActiveRecord::VERSION::MAJOR >= 5
+            relation.where_clause&.ast
+          elsif [3, 4].include?(ActiveRecord::VERSION::MAJOR)
+            relation.where_values.reduce(&:and)
+          end
+        end
+      end
+
       def searchlogic_suffix_condition_match(method_name)
         suffix_regexp = searchlogic_suffix_conditions.keys.join('|')
         if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)(#{suffix_regexp})\z/)
@@ -84,8 +98,10 @@ module ModernSearchlogic
             arity: arity,
             block: lambda do |*args|
               validate_argument_count!(arity, args.length) if arity >= 0
-              arel_conditions = column_names.map { |n| instance_exec(n, *args, &method_block) }.reduce(:or)
-              where(arel_conditions)
+              arel_nodes = column_names.map do |n|
+                instance_exec(n, *args, &method_block)
+              end
+              where(arel_nodes.reduce(:or))
             end
           }
         end
@@ -233,8 +249,21 @@ module ModernSearchlogic
         searchlogic_arel_alias :gte, :gteq
         searchlogic_arel_alias :less_than_or_equal_to, :lteq
         searchlogic_arel_alias :lte, :lteq
-        searchlogic_arel_alias :in, :in, :takes_array_args => true
-        searchlogic_arel_alias :not_in, :not_in, :takes_array_args => true
+        searchlogic_active_record_alias :in do |column, values|
+          has_nil = values.include?(nil)
+          values = values.flatten.compact
+          subs = [values]
+          if has_nil
+            subs << nil
+          end
+          where(column => searchlogic_extract_arel_compatible_value(subs))
+        end
+        searchlogic_active_record_alias :not_in do |column, values|
+          values = searchlogic_extract_arel_compatible_value(values.flatten)
+          query = values.map { "#{connection.quote_table_name(arel_table.name)}.#{connection.quote_column_name(column)} != ?" }.join(" AND ")
+          where(query, *values)
+        end
+
         searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
         searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
         searchlogic_arel_alias :ends_with, :matches, :map_value => -> (val) { "%#{val}" }
