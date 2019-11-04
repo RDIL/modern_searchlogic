@@ -3,12 +3,11 @@ module ModernSearchlogic
     def self.included(base)
       base.singleton_class.class_eval do
         def scope_procedure(name, options = nil)
-          define_singleton_method name do |*args|
-            case options
-            when Symbol
+          if options.is_a?(Proc)
+            define_singleton_method(name, &options)
+          else
+            define_singleton_method(name) do |*args|
               public_send(options, *args)
-            else
-              options.call(*args)
             end
           end
           self._defined_scopes << name.to_sym
