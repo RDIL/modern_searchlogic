@@ -10,15 +10,10 @@ module ModernSearchlogic
 
     module ClassMethods
       def order(expression)
-        match_data = expression.to_s.match(/^(ascend|descend)_by_(.*)/)
-        return super unless match_data
-
-        direction = match_data.captures.first
-        column = match_data.captures.second
-        if direction == 'ascend'
-          order(arel_table[column].asc)
+        if expression.to_s.match(/^(ascend|descend)_by_(.*)/) && respond_to?(expression)
+          send(expression)
         else
-          order(arel_table[column].desc)
+          super
         end
       end
     end
