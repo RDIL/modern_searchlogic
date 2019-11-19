@@ -24,6 +24,12 @@ describe ModernSearchlogic::ScopeProcedure do
     Post.published_for_users(user_1, user_2).should =~ [post_1, post_2]
   end
 
+  it 'handles arity correctly when scope_procedure is passed a proc' do
+    search = Post.search(order: :descend_by_created_at)
+    search.active = true
+    search.all.should =~ [post_1, post_2]
+  end
+
   context 'and the scope procedure does not return a scope' do
     it 'returns the result of the scope procedure' do
       Post.published_grouped_by_user.should eq(

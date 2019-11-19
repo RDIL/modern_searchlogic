@@ -8,7 +8,7 @@ module ModernSearchlogic
       def valid_searchlogic_scope?(method)
         searchlogic_scope_dynamically_defined?(method) ||
           !!searchlogic_column_condition_method_block(method.to_s) ||
-          _defined_scopes.include?(method)
+          _defined_scopes.include?(method.to_sym)
       end
 
       def dynamically_define_searchlogic_method(method)
