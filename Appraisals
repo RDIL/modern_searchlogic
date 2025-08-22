@@ -1,29 +1,54 @@
+require 'dotenv'
+
+Dotenv.load
+
 appraise "rails-3" do
-  gem "rails", "~> 3.2.22.5"
-  gem "sqlite3"
-  gem "rspec-rails"
+  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+    gem "rails", "~> 3.2"
+  end
+  gem "rake", "~> 10.0"
+  gem "pg"
+  gem "rspec", "~> 2.14"
+  gem "rspec-rails", "~> 2.14"
   gem "rspec-its"
   gem "test-unit"
-  gem 'pg', '= 0.20'
   gem "pry"
   gem "strong_parameters"
+  gem "ruby3-backward-compatibility"
+  gem "bigdecimal"
+  gem "base64"
+  gem "racc"
 end
 
 appraise "rails-4" do
-  gem "rails", "~> 4.2.10"
-  gem "sqlite3"
-  gem "rspec-rails"
+  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+    gem "rails", "~> 4.2"
+  end
+  gem "rake", "~> 12.0"
+  gem "pg"
+  gem "rspec", "~> 3.0"
+  gem "rspec-rails", "~> 3.0"
   gem "rspec-its"
-  gem 'pg', '= 0.20'
   gem "pry"
+  gem "ruby3-backward-compatibility"
+  gem "mutex_m"
+  gem "bigdecimal"
+  gem "base64"
 end
 
 appraise "rails-5" do
-  gem "rails", "~> 5.2.1"
+  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+    gem "rails", "~> 5.2"
+  end
+  gem "rake", "~> 13.0"
+  gem "pg"
   gem "listen"
   gem "sqlite3"
-  gem "rspec-rails"
+  gem "rspec", "~> 3.0"
+  gem "rspec-rails", "~> 3.0"
   gem "rspec-its"
-  gem 'pg'
   gem "pry"
+  gem "ruby3-backward-compatibility"
+  gem "mutex_m"
+  gem "bigdecimal"
 end
