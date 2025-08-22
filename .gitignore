@@ -7,3 +7,6 @@ spec/app_rails*/log/*.log
 spec/app_rails*/tmp/
 spec/app_rails*/.sass-cache
 *.un~
+.env
+.idea
+gemfiles

@@ -54,3 +54,18 @@ RSpec.configure do |config|
   # https://relishapp.com/rspec/rspec-rails/docs
   config.infer_spec_type_from_file_location!
 end
+
+begin
+  RSpec::Matchers::BuiltIn::OperatorMatcher.class_eval do
+    private
+
+    def has_non_generic_implementation_of?(op)
+      [
+        ::Ruby3BackwardCompatibility::ObjectCompatibility,
+        ::Kernel,
+      ].exclude?(Support.method_handle_for(@actual, op).owner)
+    rescue NameError
+      false
+    end
+  end
+end
