@@ -6,7 +6,7 @@ appraise "rails-3" do
   source ENV.fetch("RAILS_LTS_CREDENTIALS") do
     gem "rails", "~> 3.2"
   end
-  gem "rake", "~> 10.0"
+  gem "rake", "~> 12.0"
   gem "pg"
   gem "rspec", "~> 2.14"
   gem "rspec-rails", "~> 2.14"

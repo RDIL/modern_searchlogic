@@ -1,0 +1,14 @@
+[tasks.install-all]
+run = "bundle install && bundle exec appraisal install"
+
+[tasks.rspec3]
+run = "zsh -c 'export TEST_APP_DIR=\"spec/app_rails3\" && export APPRAISAL_NAME=\"rails-3\" && ./script/run_specs.sh'"
+
+[tasks.rspec4]
+run = "zsh -c 'export TEST_APP_DIR=\"spec/app_rails4\" && export APPRAISAL_NAME=\"rails-4\" && ./script/run_specs.sh'"
+
+[tasks.rspec5]
+run = "zsh -c 'export TEST_APP_DIR=\"spec/app_rails5\" && export APPRAISAL_NAME=\"rails-5\" && ./script/run_specs.sh'"
+
+[tasks.test-all]
+run = "zsh -c 'mise run rspec3 && mise run rspec4 && mise run rspec5'"
