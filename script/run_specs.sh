@@ -3,7 +3,7 @@
 set -e
 
 export POSTGRES_URL="postgres://postgres:password@localhost:5432/postgres"
-
+export RAILS_ENV="test"
 export PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
 convert_appraisal_to_gemfile() {
@@ -65,7 +65,6 @@ export RUBYLIB="$PROJECT_ROOT/spec:$RUBYLIB"
 
 cd "$TEST_APP_DIR" || exit 1
 
-export RAILS_ENV=test
 export RAILS_ROOT="$PROJECT_ROOT/$TEST_APP_DIR"
 
 BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundle exec ruby -r "$PROJECT_ROOT/spec/ruby3_compatibility" -e "require 'rspec/core'; RSpec::Core::Runner.run(ARGV)" $SPEC_FILES
