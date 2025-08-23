@@ -4,7 +4,7 @@ if RUBY_VERSION >= "3.0"
       alias_method :exists?, :exist?
     end
   end
-  
+
   unless Dir.respond_to?(:exists?)
     class << Dir
       alias_method :exists?, :exist?
