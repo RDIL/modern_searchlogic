@@ -1,5 +1,13 @@
 require 'rails_helper'
 
+def update_attributes_method_name
+  if Gem::Version.new(Rails.version) >= Gem::Version.new('6.0.0')
+    :update!
+  else
+    :update_attributes!
+  end
+end
+
 describe ModernSearchlogic::ColumnConditions do
   shared_examples 'a column condition' do |*args|
     finder_method, user_attributes, find_by = *args
@@ -258,7 +266,7 @@ describe ModernSearchlogic::ColumnConditions do
     end
 
     specify 'custom scopes should work' do
-      user.posts.first.update_attributes!(:published_at => Time.now)
+      user.posts.first.send(update_attributes_method_name, :published_at => Time.now)
       User.posts_published.first.should == user
     end
 
