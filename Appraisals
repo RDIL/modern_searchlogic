@@ -43,12 +43,24 @@ appraise "rails-5" do
   gem "rake", "~> 13.0"
   gem "pg"
   gem "listen"
-  gem "sqlite3"
   gem "rspec", "~> 3.0"
-  gem "rspec-rails", "~> 3.0"
+  gem "rspec-rails", "~> 5.0"
   gem "rspec-its"
   gem "pry"
   gem "ruby3-backward-compatibility"
   gem "mutex_m"
   gem "bigdecimal"
+end
+
+appraise "rails-6" do
+  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+    gem "rails", "~> 6"
+  end
+  gem "rake", "~> 13.0"
+  gem "pg"
+  gem "listen"
+  gem "rspec", "~> 3.0"
+  gem "rspec-rails", "~> 6.0"
+  gem "rspec-its"
+  gem "pry"
 end
