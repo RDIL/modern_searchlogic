@@ -25,7 +25,7 @@ def setup_database(gemfile_path, test_app_dir)
     sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:environment:set RAILS_ENV=test') || exit(1)
 
     unless $already_set_up_db
-      sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:migrate') || exit(1)
+      sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:schema:load') || exit(1)
     end
   end
 
@@ -34,7 +34,7 @@ end
 
 def find_spec_files
   Dir.chdir(ENV['PROJECT_ROOT']) do
-    Dir.glob('**/*_spec.rb')
+    Dir.glob('spec/**/*_spec.rb')
        .reject { |file| file.match?(/spec\/app_rails.*\//) }
        .map { |file| File.expand_path(file) }
   end
