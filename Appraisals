@@ -3,7 +3,7 @@ require 'dotenv'
 Dotenv.load
 
 appraise "rails-3" do
-  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+  source "https://gems.railslts.com" do
     gem "rails", "~> 3.2"
   end
   gem "rake", "~> 12.0"
@@ -21,7 +21,7 @@ appraise "rails-3" do
 end
 
 appraise "rails-4" do
-  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+  source "https://gems.railslts.com" do
     gem "rails", "~> 4.2"
   end
   gem "rake", "~> 12.0"
@@ -37,7 +37,7 @@ appraise "rails-4" do
 end
 
 appraise "rails-5" do
-  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
+  source "https://gems.railslts.com" do
     gem "rails", "~> 5.2"
   end
   gem "rake", "~> 13.0"

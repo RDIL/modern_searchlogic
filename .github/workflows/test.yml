@@ -8,10 +8,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Test
-
-    env:
-      RAILS_LTS_CREDENTIALS: ${{ secrets.RAILS_LTS_CREDENTIALS }}
 
     services:
       postgres:
@@ -27,6 +23,16 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    strategy:
+      matrix:
+        rails-version: [3, 4, 5, 7]
+
+    name: Test on Rails v${{ matrix.rails-version }}
+
+    env:
+      BUNDLE_GEMFILE: "gemfiles/rails_${{ matrix.rails-version }}.gemfile"
+      BUNDLE_GEMS__RAILSLTS__COM: ${{ secrets.RAILS_LTS_CREDENTIALS }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,8 +42,5 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Install Appraisals
-        run: bundler exec rake install_appraisals
-
       - name: Run tests
-        run: bundler exec rake test
+        run: bundler exec rake rspec${{ matrix.rails-version }}
