@@ -19,5 +19,6 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", ">= 3.2.14"
 
   s.add_development_dependency 'appraisal'
+  s.add_development_dependency 'rake'
   s.add_development_dependency 'dotenv', '~> 2.0'
 end
