@@ -219,6 +219,7 @@ DEPENDENCIES
   appraisal
   dotenv (~> 2.0)
   modern_searchlogic!
+  rake
 
 BUNDLED WITH
    2.7.1
