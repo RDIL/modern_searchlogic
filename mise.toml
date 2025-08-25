@@ -10,11 +10,11 @@ run = "bash -c 'export TEST_APP_DIR=\"spec/app_rails4\" && export APPRAISAL_NAME
 [tasks.rspec5]
 run = "bash -c 'export TEST_APP_DIR=\"spec/app_rails5\" && export APPRAISAL_NAME=\"rails-5\" && ./script/run_specs.sh'"
 
-[tasks.rspec6]
-run = "bash -c 'export TEST_APP_DIR=\"spec/app_rails6\" && export APPRAISAL_NAME=\"rails-6\" && ./script/run_specs.sh'"
+[tasks.rspec7]
+run = "bash -c 'export TEST_APP_DIR=\"spec/app_rails7\" && export APPRAISAL_NAME=\"rails-7\" && ./script/run_specs.sh'"
 
 [tasks.start-db]
 run = "docker compose up -d postgres"
 
 [tasks.test-all]
-run = "bash -c 'mise run rspec3 && mise run rspec4 && mise run rspec5 && mise run rspec6'"
+run = "bash -c 'mise run rspec3 && mise run rspec4 && mise run rspec5 && mise run rspec7'"

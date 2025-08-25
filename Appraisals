@@ -52,15 +52,13 @@ appraise "rails-5" do
   gem "bigdecimal"
 end
 
-appraise "rails-6" do
-  source ENV.fetch("RAILS_LTS_CREDENTIALS") do
-    gem "rails", "~> 6"
-  end
+appraise "rails-7" do
+  gem "rails", "~> 7.2"
   gem "rake", "~> 13.0"
   gem "pg"
   gem "listen"
   gem "rspec", "~> 3.0"
-  gem "rspec-rails", "~> 6.0"
+  gem "rspec-rails", "~> 8.0"
   gem "rspec-its"
   gem "pry"
 end

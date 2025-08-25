@@ -40,13 +40,7 @@ cd "$TEST_APP_DIR" || exit 1
 
 BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundler exec rake db:create:all
 BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundler exec rake db:environment:set RAILS_ENV=test
-
-if [ "$APPRAISAL_NAME" = "rails-5" ]; then
-    echo "Running migrations for Rails 5.2 instead of schema:load because it's a special snowflake"
-    BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundler exec rake db:migrate
-else
-    BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundler exec rake db:schema:load
-fi
+BUNDLE_GEMFILE="$PROJECT_ROOT/gemfiles/${GEMFILE_NAME}.gemfile" bundler exec rake db:migrate
 
 echo "Running specs for $APPRAISAL_NAME..."
 echo "Finding spec files..."
