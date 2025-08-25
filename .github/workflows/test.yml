@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Test
 
+    env:
+      RAILS_LTS_CREDENTIALS: ${{ secrets.RAILS_LTS_CREDENTIALS }}
+
     services:
       postgres:
         image: postgres:17
@@ -28,18 +31,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          bundler-cache: true
-
-      - name: Install mise
-        run: |
-          curl https://mise.run | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Setup Ruby
+        uses: actions/setup-ruby@v1
 
       - name: Install Appraisals
-        run: mise install-all
+        run: bundler exec rake install_appraisals
 
       - name: Run tests
-        run: mise test-all
+        run: bundler exec rake test

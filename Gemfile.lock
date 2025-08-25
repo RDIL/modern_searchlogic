@@ -203,7 +203,6 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    wwtd (1.4.1)
     zeitwerk (2.7.3)
 
 PLATFORMS
@@ -220,7 +219,6 @@ DEPENDENCIES
   appraisal
   dotenv (~> 2.0)
   modern_searchlogic!
-  wwtd
 
 BUNDLED WITH
    2.7.1
