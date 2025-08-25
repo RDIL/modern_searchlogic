@@ -14,38 +14,42 @@ ActiveRecord::Schema[7.2].define(version: 2019_08_12_194128) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "comments", id: :serial, force: :cascade do |t|
+  create_table "comments", force: :cascade do |t|
     t.text "body"
-    t.integer "post_id", null: false
+    t.bigint "post_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["post_id"], name: "index_comments_on_post_id"
   end
 
-  create_table "posts", id: :serial, force: :cascade do |t|
-    t.integer "user_id"
-    t.string "title", limit: 255
+  create_table "posts", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "title"
     t.text "body"
     t.datetime "published_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
-  create_table "users", id: :serial, force: :cascade do |t|
-    t.string "username", limit: 255
+  create_table "users", force: :cascade do |t|
+    t.string "username"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "age", default: 0, null: false
-    t.string "email", limit: 255
+    t.string "email"
     t.boolean "active"
     t.integer "backup_user_id"
   end
 
-  create_table "votes", id: :serial, force: :cascade do |t|
-    t.integer "voteable_id", null: false
-    t.string "voteable_type", limit: 255, null: false
+  create_table "votes", force: :cascade do |t|
+    t.string "voteable_type", null: false
+    t.bigint "voteable_id", null: false
     t.integer "vote", null: false
-    t.integer "voter_id", null: false
+    t.bigint "voter_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.index ["voteable_type", "voteable_id"], name: "index_votes_on_voteable_type_and_voteable_id"
+    t.index ["voter_id"], name: "index_votes_on_voter_id"
   end
 end
