@@ -6,8 +6,6 @@ end
 
 require 'rake'
 
-$already_set_up_db = false
-
 SUPPORTED_RAILS_VERSIONS = (3..5).to_a.concat([7]).freeze
 
 def convert_appraisal_to_gemfile(appraisal_name)
@@ -18,18 +16,10 @@ def setup_database(gemfile_path, test_app_dir)
   puts "Setting up database..."
 
   Dir.chdir(File.join(ENV['PROJECT_ROOT'], test_app_dir)) do
-    unless $already_set_up_db
-      sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:create:all') || exit(1)
-    end
-
+    sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:create:all') || exit(1)
     sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:environment:set RAILS_ENV=test') || exit(1)
-
-    unless $already_set_up_db
-      sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:schema:load') || exit(1)
-    end
+    sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:schema:load') || exit(1)
   end
-
-  $already_set_up_db = true
 end
 
 def find_spec_files
