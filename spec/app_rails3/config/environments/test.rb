@@ -34,6 +34,4 @@ App::Application.configure do
 
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
-
-  config.active_record.dump_schema_after_migration = true
 end
