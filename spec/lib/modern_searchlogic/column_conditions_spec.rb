@@ -287,4 +287,28 @@ describe ModernSearchlogic::ColumnConditions do
       User.not_active.all.should == [inactive]
     end
   end
+
+  context 'abstract class' do
+    it 'should not try to add searchlogic methods' do
+      class MyApplicationRecord < ActiveRecord::Base
+        self.abstract_class = true
+      end
+
+      MyApplicationRecord.should_not respond_to :id_eq
+    end
+
+    context 'extended by a non-abstract class' do
+      it 'should add searchlogic methods' do
+        class MyApplicationRecord < ActiveRecord::Base
+          self.abstract_class = true
+        end
+
+        class ScopedUser < MyApplicationRecord
+          self.table_name = 'users'
+        end
+
+        ScopedUser.should respond_to :id_eq
+      end
+    end
+  end
 end
