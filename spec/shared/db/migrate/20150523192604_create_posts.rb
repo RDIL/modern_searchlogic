@@ -1,4 +1,6 @@
-class CreatePosts < ActiveRecord::Migration[5.2]
+require_relative '../../migration_compatibility_helper'
+
+class CreatePosts < ActiveRecordMigration
   def change
     create_table :posts do |t|
       t.belongs_to :user

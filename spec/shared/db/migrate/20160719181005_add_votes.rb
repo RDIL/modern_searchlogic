@@ -1,4 +1,6 @@
-class AddVotes < ActiveRecord::Migration
+require_relative '../../migration_compatibility_helper'
+
+class AddVotes < ActiveRecordMigration
   def change
     create_table :votes do |t|
       t.belongs_to :voteable, polymorphic: true, null: false
