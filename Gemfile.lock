@@ -90,7 +90,6 @@ GEM
     connection_pool (2.5.3)
     crass (1.0.6)
     date (3.4.1)
-    dotenv (2.8.1)
     drb (2.2.3)
     erb (5.0.2)
     erubi (1.13.1)
@@ -217,7 +216,6 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  dotenv (~> 2.0)
   modern_searchlogic!
   rake
 

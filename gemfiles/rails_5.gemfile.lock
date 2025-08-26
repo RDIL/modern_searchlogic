@@ -85,7 +85,6 @@ GEM
     crass (1.0.6)
     date (3.4.1)
     diff-lcs (1.6.2)
-    dotenv (2.8.1)
     erubi (1.13.1)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
@@ -224,7 +223,6 @@ PLATFORMS
 DEPENDENCIES
   appraisal
   bigdecimal
-  dotenv (~> 2.0)
   listen
   modern_searchlogic!
   mutex_m

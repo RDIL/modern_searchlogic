@@ -1,6 +1,6 @@
 spec/**/*.html linguist-generated
-spec/app_rails3/db/**/* linguist-generated
-spec/app_rails4/db/**/* linguist-generated
-spec/app_rails5/db/**/* linguist-generated
-spec/app_rails7/db/**/* linguist-generated
+spec/app_rails3/**/* linguist-generated
+spec/app_rails4/**/* linguist-generated
+spec/app_rails5/**/* linguist-generated
+spec/app_rails7/**/* linguist-generated
 gemfiles/* linguist-generated
