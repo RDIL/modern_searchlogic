@@ -1,7 +1,3 @@
-require 'dotenv'
-
-Dotenv.load
-
 appraise "rails-3" do
   source "https://gems.railslts.com" do
     gem "rails", "~> 3.2"
