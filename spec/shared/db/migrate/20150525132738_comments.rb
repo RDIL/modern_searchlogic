@@ -1,4 +1,6 @@
-class Comments < ActiveRecord::Migration[5.2]
+require_relative '../../migration_compatibility_helper'
+
+class Comments < ActiveRecordMigration
   def change
     create_table :comments do |t|
       t.text :body
