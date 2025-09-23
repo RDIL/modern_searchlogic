@@ -7,11 +7,11 @@ require "modern_searchlogic/version"
 Gem::Specification.new do |s|
   s.name        = "modern_searchlogic"
   s.version     = ModernSearchlogic::VERSION
-  s.authors     = ["Andrew Warner"]
+  s.authors     = ["Andrew Warner", "Reece Dunham", "Genius Tech Team"]
   s.email       = ["wwarner.andrew@gmail.com"]
-  s.homepage    = "https://github.com/Genius/modern_searchlogic"
-  s.summary     = "Searchlogic, but for AREL"
-  s.description = "Because it's rampant through your codebase and you can't upgrade to rails 3 otherwise"
+  s.homepage    = "https://github.com/RDIL/modern_searchlogic"
+  s.summary     = "Searchlogic, but for AREL (Rails 3+)."
+  s.description = "Because it's rampant through your codebase, and you can't upgrade to Rails 3 otherwise."
   s.license     = "MIT"
 
   s.files = Dir["lib/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
