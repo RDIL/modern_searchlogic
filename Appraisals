@@ -58,3 +58,13 @@ appraise "rails-7" do
   gem "rspec-its"
   gem "pry"
 end
+
+appraise "rails-8" do
+  gem "rails", "~> 8.0"
+  gem "rake", "~> 13.0"
+  gem "pg"
+  gem "rspec", "~> 3.0"
+  gem "rspec-rails", "~> 8.0"
+  gem "rspec-its"
+  gem "pry"
+end
