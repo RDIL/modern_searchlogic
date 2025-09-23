@@ -6,9 +6,8 @@ end
 
 require 'rake'
 require 'pathname'
-require 'active_support/core_ext/array/access'
 
-SUPPORTED_RAILS_VERSIONS = (3..8).to_a.without(6)
+SUPPORTED_RAILS_VERSIONS = (3..8).to_a.filter { |it| it != 6 }
 
 def convert_appraisal_to_gemfile(appraisal_name)
   appraisal_name.tr('-', '_')
