@@ -1,5 +1,9 @@
 # Changelog
 
+# v1.0.1
+
+No changes, fixing bad publish.
+
 # v1.0.0
 
 This marks the first release of the fork. Changes from Genius/master:
