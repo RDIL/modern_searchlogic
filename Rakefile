@@ -85,12 +85,14 @@ task :install_appraisals do
   sh('bundler exec appraisal install')
 end
 
+require 'pathname'
+
 desc 'Set up symlinks for a new Rails version appraisal'
 task :setup_symlinks, [:name] do |_t, args|
   raise 'Please provide the app name (e.g. app_rails9)' unless args[:name]
 
-  base_dir = Pathname.new("spec/#{args[:name]}").realpath rescue Pathname.new("spec/#{args[:name]}")
-  shared_dir = Pathname.new('spec/shared').realpath
+  base_dir = Pathname.new("spec/#{args[:name]}")
+  shared_dir = Pathname.new('spec/shared')
 
   links = [
     { from: 'app/models', to: 'models' },
@@ -103,7 +105,8 @@ task :setup_symlinks, [:name] do |_t, args|
     target = shared_dir.join(link[:to])
     parent_dir = link_name.dirname
     sh("mkdir -p #{parent_dir}")
-    sh("ln -sf #{target} #{link_name}")
+    relative_target = target.relative_path_from(parent_dir)
+    sh("ln -sf #{relative_target} #{link_name}")
   end
 end
 
