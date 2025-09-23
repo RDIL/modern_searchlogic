@@ -5,8 +5,10 @@ rescue LoadError
 end
 
 require 'rake'
+require 'pathname'
+require 'active_support/core_ext/array/access'
 
-SUPPORTED_RAILS_VERSIONS = (3..5).to_a.concat([7]).freeze
+SUPPORTED_RAILS_VERSIONS = (3..8).to_a.without(6)
 
 def convert_appraisal_to_gemfile(appraisal_name)
   appraisal_name.tr('-', '_')
@@ -16,9 +18,9 @@ def setup_database(gemfile_path, test_app_dir)
   puts "Setting up database..."
 
   Dir.chdir(File.join(ENV['PROJECT_ROOT'], test_app_dir)) do
-    sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:create:all') || exit(1)
-    sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:environment:set RAILS_ENV=test') || exit(1)
-    sh({'BUNDLE_GEMFILE' => gemfile_path}, 'bundle exec rake db:schema:load') || exit(1)
+    sh({ 'BUNDLE_GEMFILE' => gemfile_path }, 'bundle exec rake db:create:all') || exit(1)
+    sh({ 'BUNDLE_GEMFILE' => gemfile_path }, 'bundle exec rake db:environment:set RAILS_ENV=test') || exit(1)
+    sh({ 'BUNDLE_GEMFILE' => gemfile_path }, 'bundle exec rake db:schema:load') || exit(1)
   end
 end
 
@@ -47,7 +49,7 @@ def run_specs(gemfile_path, test_app_dir, spec_files)
       *spec_files
     ]
 
-    sh({'BUNDLE_GEMFILE' => gemfile_path}, *cmd) || exit(1)
+    sh({ 'BUNDLE_GEMFILE' => gemfile_path }, *cmd) || exit(1)
   end
 end
 
@@ -70,24 +72,46 @@ end
 
 SUPPORTED_RAILS_VERSIONS.each do |version|
   desc "Run specs for Rails #{version}"
-  task "rspec#{version}" do
+  task :"rspec#{version}" do
     run_specs_for_version("rails-#{version}", "spec/app_rails#{version}")
   end
 end
 
-desc "Run specs for all versions of Rails"
-task "test" => SUPPORTED_RAILS_VERSIONS.map { |it| "rspec#{it}".to_sym }
+desc 'Run specs for all versions of Rails'
+task :test => SUPPORTED_RAILS_VERSIONS.map { |it| "rspec#{it}".to_sym }
 
-desc "Install appraisals"
-task "install_appraisals" do
-  sh("bundler exec appraisal install")
+desc 'Install appraisals'
+task :install_appraisals do
+  sh('bundler exec appraisal install')
+end
+
+desc 'Set up symlinks for a new Rails version appraisal'
+task :setup_symlinks, [:name] do |_t, args|
+  raise 'Please provide the app name (e.g. app_rails9)' unless args[:name]
+
+  base_dir = Pathname.new("spec/#{args[:name]}").realpath rescue Pathname.new("spec/#{args[:name]}")
+  shared_dir = Pathname.new('spec/shared').realpath
+
+  links = [
+    { from: 'app/models', to: 'models' },
+    { from: 'db/migrate', to: 'db/migrate' },
+    { from: 'config/database.yml', to: 'config/database.yml' }
+  ]
+
+  links.each do |link|
+    link_name = base_dir.join(link[:from])
+    target = shared_dir.join(link[:to])
+    parent_dir = link_name.dirname
+    sh("mkdir -p #{parent_dir}")
+    sh("ln -sf #{target} #{link_name}")
+  end
 end
 
 require 'rdoc/task'
 
 RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ModernSearchlogic'
+  rdoc.title = 'ModernSearchlogic'
   rdoc.options << '--line-numbers'
   rdoc.rdoc_files.include('README.rdoc')
   rdoc.rdoc_files.include('lib/**/*.rb')

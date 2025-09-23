@@ -9,3 +9,4 @@ spec/app_rails*/.sass-cache
 *.un~
 .env
 .idea
+.gem_rbs_collection
