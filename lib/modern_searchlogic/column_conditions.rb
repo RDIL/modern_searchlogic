@@ -259,11 +259,8 @@ module ModernSearchlogic
         searchlogic_active_record_alias :in do |column, values|
           has_nil = values.include?(nil)
           values = values.flatten.compact
-          subs = [values]
-          if has_nil
-            subs << nil
-          end
-          where(column => searchlogic_extract_arel_compatible_value(subs))
+          values << nil if has_nil
+          where(column => searchlogic_extract_arel_compatible_value(values))
         end
         searchlogic_active_record_alias :not_in do |column, values|
           values = searchlogic_extract_arel_compatible_value(values.flatten)

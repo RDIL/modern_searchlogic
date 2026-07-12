@@ -221,6 +221,7 @@ describe ModernSearchlogic::ColumnConditions do
 
         context 'preserving searchlogic2 behavior: nil passed as argument will be used in query' do
           specify { User.username_in(['William Andrew Warner', "Jane Smith"], nil).should == [andrew, jane, null_username] }
+          specify { User.username_in('William Andrew Warner', 'Jane Smith', nil).should == [andrew, jane, null_username] }
           specify { User.username_in('William Andrew Warner', nil).should == [andrew, null_username] }
           specify { User.username_in(nil).should == [null_username] }
           specify { User.username_in(nil, nil).should == [null_username] }
