@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.1.0
+
+- Add `config.modern_searchlogic.auto_include`, which defaults to `true`. Set it to `false` to skip `ModernSearchlogic::ActiveRecordMethods.install` for more fine-grained control.
+- Modules now declare their own dependencies, so they can be included individually.
+
 # v1.0.1
 
 No changes, fixing bad publish.
