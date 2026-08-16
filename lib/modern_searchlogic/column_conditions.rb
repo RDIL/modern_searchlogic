@@ -2,6 +2,10 @@
 
 module ModernSearchlogic
   module ColumnConditions
+    extend ActiveSupport::Concern
+
+    include ScopeTracking
+
     module ClassMethods
       def respond_to_missing?(method, *)
         super || valid_searchlogic_scope?(method)
@@ -232,74 +236,70 @@ module ModernSearchlogic
       end
     end
 
-    def self.included(base)
-      base.extend ClassMethods
+    included do
+      class_attribute :searchlogic_suffix_conditions
+      self.searchlogic_suffix_conditions = {}
 
-      base.class_eval do
-        class_attribute :searchlogic_suffix_conditions
-        self.searchlogic_suffix_conditions = {}
+      class_attribute :searchlogic_prefix_conditions
+      self.searchlogic_prefix_conditions = {}
 
-        class_attribute :searchlogic_prefix_conditions
-        self.searchlogic_prefix_conditions = {}
+      searchlogic_arel_alias :equals, :eq
+      searchlogic_arel_alias :eq, :eq
+      searchlogic_arel_alias :is, :eq
+      searchlogic_arel_alias :does_not_equal, :not_eq
+      searchlogic_arel_alias :ne, :not_eq
+      searchlogic_arel_alias :not_eq, :not_eq
+      searchlogic_arel_alias :not, :not_eq
+      searchlogic_arel_alias :is_not, :not_eq
+      searchlogic_arel_alias :greater_than, :gt
+      searchlogic_arel_alias :gt, :gt
+      searchlogic_arel_alias :less_than, :lt
+      searchlogic_arel_alias :lt, :lt
+      searchlogic_arel_alias :greater_than_or_equal_to, :gteq
+      searchlogic_arel_alias :gte, :gteq
+      searchlogic_arel_alias :less_than_or_equal_to, :lteq
+      searchlogic_arel_alias :lte, :lteq
+      searchlogic_active_record_alias :in do |column, values|
+        has_nil = values.include?(nil)
+        values = values.flatten.compact
+        values << nil if has_nil
+        where(column => searchlogic_extract_arel_compatible_value(values))
+      end
+      searchlogic_active_record_alias :not_in do |column, values|
+        values = searchlogic_extract_arel_compatible_value(values.flatten)
+        query = values.map { "#{connection.quote_table_name(arel_table.name)}.#{connection.quote_column_name(column)} != ?" }.join(" AND ")
+        where(query, *values)
+      end
 
-        searchlogic_arel_alias :equals, :eq
-        searchlogic_arel_alias :eq, :eq
-        searchlogic_arel_alias :is, :eq
-        searchlogic_arel_alias :does_not_equal, :not_eq
-        searchlogic_arel_alias :ne, :not_eq
-        searchlogic_arel_alias :not_eq, :not_eq
-        searchlogic_arel_alias :not, :not_eq
-        searchlogic_arel_alias :is_not, :not_eq
-        searchlogic_arel_alias :greater_than, :gt
-        searchlogic_arel_alias :gt, :gt
-        searchlogic_arel_alias :less_than, :lt
-        searchlogic_arel_alias :lt, :lt
-        searchlogic_arel_alias :greater_than_or_equal_to, :gteq
-        searchlogic_arel_alias :gte, :gteq
-        searchlogic_arel_alias :less_than_or_equal_to, :lteq
-        searchlogic_arel_alias :lte, :lteq
-        searchlogic_active_record_alias :in do |column, values|
-          has_nil = values.include?(nil)
-          values = values.flatten.compact
-          values << nil if has_nil
-          where(column => searchlogic_extract_arel_compatible_value(values))
-        end
-        searchlogic_active_record_alias :not_in do |column, values|
-          values = searchlogic_extract_arel_compatible_value(values.flatten)
-          query = values.map { "#{connection.quote_table_name(arel_table.name)}.#{connection.quote_column_name(column)} != ?" }.join(" AND ")
-          where(query, *values)
-        end
+      searchlogic_arel_alias :like, :matches, :map_value => ->(val) { "%#{val}%" }
+      searchlogic_arel_alias :begins_with, :matches, :map_value => ->(val) { "#{val}%" }
+      searchlogic_arel_alias :ends_with, :matches, :map_value => ->(val) { "%#{val}" }
+      searchlogic_arel_alias :not_like, :does_not_match, :map_value => ->(val) { "%#{val}%" }
+      searchlogic_arel_alias :not_begin_with, :does_not_match, :map_value => ->(val) { "#{val}%" }
+      searchlogic_arel_alias :not_end_with, :does_not_match, :map_value => ->(val) { "%#{val}" }
 
-        searchlogic_arel_alias :like, :matches, :map_value => -> (val) { "%#{val}%" }
-        searchlogic_arel_alias :begins_with, :matches, :map_value => -> (val) { "#{val}%" }
-        searchlogic_arel_alias :ends_with, :matches, :map_value => -> (val) { "%#{val}" }
-        searchlogic_arel_alias :not_like, :does_not_match, :map_value => -> (val) { "%#{val}%" }
-        searchlogic_arel_alias :not_begin_with, :does_not_match, :map_value => -> (val) { "#{val}%" }
-        searchlogic_arel_alias :not_end_with, :does_not_match, :map_value => -> (val) { "%#{val}" }
+      searchlogic_suffix_condition '_blank' do |column_name|
+        arel_table[column_name].eq(nil).or(arel_table[column_name].eq(''))
+      end
 
-        searchlogic_suffix_condition '_blank' do |column_name|
-          arel_table[column_name].eq(nil).or(arel_table[column_name].eq(''))
-        end
+      searchlogic_suffix_condition '_present' do |column_name|
+        arel_table[column_name].not_eq(nil).and(arel_table[column_name].not_eq(''))
+      end
 
-        searchlogic_suffix_condition '_present' do |column_name|
-          arel_table[column_name].not_eq(nil).and(arel_table[column_name].not_eq(''))
-        end
+      null_matcher = lambda { |column_name| arel_table[column_name].eq(nil) }
+      searchlogic_suffix_condition '_null', &null_matcher
+      searchlogic_suffix_condition '_nil', &null_matcher
 
-        null_matcher = lambda { |column_name| arel_table[column_name].eq(nil) }
-        searchlogic_suffix_condition '_null', &null_matcher
-        searchlogic_suffix_condition '_nil', &null_matcher
+      not_null_matcher = lambda { |column_name| arel_table[column_name].not_eq(nil) }
+      searchlogic_suffix_condition '_not_null', &not_null_matcher
+      searchlogic_suffix_condition '_not_nil', &not_null_matcher
 
-        not_null_matcher = lambda { |column_name| arel_table[column_name].not_eq(nil) }
-        searchlogic_suffix_condition '_not_null', &not_null_matcher
-        searchlogic_suffix_condition '_not_nil', &not_null_matcher
+      searchlogic_prefix_condition 'descend_by_' do |column_name|
+        order(arel_table[column_name].desc)
+      end
 
-        searchlogic_prefix_condition 'descend_by_' do |column_name|
-          order(arel_table[column_name].desc)
-        end
-
-        searchlogic_prefix_condition 'ascend_by_' do |column_name|
-          order(arel_table[column_name].asc)
-        end
+      searchlogic_prefix_condition 'ascend_by_' do |column_name|
+        order(arel_table[column_name].asc)
       end
     end
   end
