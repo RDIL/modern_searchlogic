@@ -12,7 +12,7 @@ module ModernSearchlogic
       end
 
       def valid_searchlogic_scope?(method)
-        return false if !searchlogic_schema_ready? || method =~ /^define_method_/ || abstract_class?
+        return false if abstract_class? || method =~ /^define_method_/ || !searchlogic_schema_ready?
 
         searchlogic_scope_dynamically_defined?(method) ||
           !!searchlogic_column_condition_method_block(method.to_s) ||
@@ -40,7 +40,9 @@ module ModernSearchlogic
       private
 
       def searchlogic_schema_ready?
-        @searchlogic_schema_ready ||= !connection.tables.empty?
+        return false if self == ActiveRecord::Base
+
+        @searchlogic_schema_ready ||= table_exists?
       end
 
       def searchlogic_scope_dynamically_defined?(method)
@@ -201,7 +203,7 @@ module ModernSearchlogic
       end
 
       def method_missing(method, *args, &block)
-        return super if !searchlogic_schema_ready? || abstract_class?
+        return super if abstract_class? || !searchlogic_schema_ready?
         return super unless dynamically_define_searchlogic_method(method)
 
         __send__(method, *args, &block)
