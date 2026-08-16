@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ModernSearchlogic
   module ColumnConditions
     module ClassMethods
@@ -15,7 +17,7 @@ module ModernSearchlogic
 
       def dynamically_define_searchlogic_method(method)
         return true if searchlogic_scope_dynamically_defined?(method)
-        return false unless searchlogic_scope = searchlogic_column_condition_method_block(method.to_s)
+        return false unless (searchlogic_scope = searchlogic_column_condition_method_block(method.to_s))
         singleton_class.__send__(:define_method, method, &searchlogic_scope[:block])
         self._dynamically_defined_searchlogic_scopes = self._dynamically_defined_searchlogic_scopes.merge(method => searchlogic_scope)
         true
@@ -78,7 +80,7 @@ module ModernSearchlogic
         end
       end
 
-      def searchlogic_active_record_alias(searchlogic_suffix, options = {}, &block)
+      def searchlogic_active_record_alias(searchlogic_suffix, &block)
         searchlogic_suffix_condition "_#{searchlogic_suffix}" do |column_name, *args|
           raise ArgumentError, "wrong number of arguments (0 for >= 1)" if args.empty?
           raise ArgumentError, "unsupported searchlogic suffix #{searchlogic_suffix} passed" unless [:in, :not_in].include?(searchlogic_suffix)
@@ -94,8 +96,8 @@ module ModernSearchlogic
 
       def searchlogic_suffix_condition_match(method_name)
         suffix_regexp = searchlogic_suffix_conditions.keys.join('|')
-        if match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)(#{suffix_regexp})\z/)
-          options, method_block = searchlogic_suffix_conditions.fetch(match[2])
+        if (match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)(#{suffix_regexp})\z/))
+          _options, method_block = searchlogic_suffix_conditions.fetch(match[2])
           column_names = match[1].split('_or_')
 
           arity = calculate_arity(method_block)
@@ -115,7 +117,7 @@ module ModernSearchlogic
 
       def searchlogic_prefix_match(method_name)
         prefix_regexp = searchlogic_prefix_conditions.keys.join('|')
-        if match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/)
+        if (match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/))
           method_block = searchlogic_prefix_conditions.fetch(match[1])
 
           arity = calculate_arity(method_block)
@@ -127,7 +129,7 @@ module ModernSearchlogic
               instance_exec(match[2], *args, &method_block)
             end
           }
-        elsif match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/)
+        elsif (match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/))
           prefix, association_name, rest = match.to_a.drop(1)
 
           searchlogic_association_finder_method(association_by_name.fetch(association_name.to_sym), prefix + rest)
@@ -135,13 +137,13 @@ module ModernSearchlogic
       end
 
       def searchlogic_association_suffix_match(method_name)
-        if match = method_name.match(/\A(#{association_names_regexp})_(\S+)\z/)
+        if (match = method_name.match(/\A(#{association_names_regexp})_(\S+)\z/))
           searchlogic_association_finder_method(association_by_name.fetch(match[1].to_sym), match[2])
         end
       end
 
       def searchlogic_column_boolean_match(method_name)
-        if match = method_name.match(/^not_(.*)/)
+        if (match = method_name.match(/^not_(.*)/))
           column_name = match[1]
           if boolean_column?(column_name)
             {arity: 0, block: lambda { where(column_name => false) }}

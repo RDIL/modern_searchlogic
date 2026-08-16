@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ModernSearchlogic
   class Search
     def self.search(model_class, options = {})

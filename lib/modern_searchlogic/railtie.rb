@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ModernSearchlogic
   class Railtie < Rails::Railtie
     initializer 'modern_searchlogic.setup_activerecord' do
