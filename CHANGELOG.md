@@ -1,6 +1,6 @@
 # Changelog
 
-# v1.1.0
+# v1.2.0
 
 - Add `config.modern_searchlogic.auto_include`, which defaults to `true`. Set it to `false` to skip `ModernSearchlogic::ActiveRecordMethods.install` for more fine-grained control.
   - https://github.com/RDIL/modern_searchlogic/commit/1920df8468a91003d57b1a46f8b7326725bca210
@@ -12,6 +12,9 @@
 - Fix multiple deprecation warnings on Rails 4
   - https://github.com/RDIL/modern_searchlogic/commit/afdac5fab6030c1ca12408898b9059e022219095
   - https://github.com/RDIL/modern_searchlogic/commit/80d102dc68495eb1484cc1cd5609b435f22f239d
+
+Note that v1.1.0 and v1.1.1 do not exist due to bad publishes / GitHub bugs.
+I don't care anymore and just want the new version to be released, so here it is, 1.2.0.
 
 # v1.0.1
 
