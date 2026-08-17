@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    modern_searchlogic (1.0.1)
+    modern_searchlogic (1.1.1)
       rails (>= 3.2.14)
 
 GEM

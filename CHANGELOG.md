@@ -1,5 +1,10 @@
 # Changelog
 
+# v1.1.1
+
+No real changes since v1.1.0, just updating the lockfiles for the new version, which I previously forgot to do (and the publish failed as a result).
+I've added a release checklist so that I don't forget in the future.
+
 # v1.1.0
 
 - Add `config.modern_searchlogic.auto_include`, which defaults to `true`. Set it to `false` to skip `ModernSearchlogic::ActiveRecordMethods.install` for more fine-grained control.
