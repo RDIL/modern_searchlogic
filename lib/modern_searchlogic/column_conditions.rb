@@ -4,8 +4,6 @@ module ModernSearchlogic
   module ColumnConditions
     extend ActiveSupport::Concern
 
-    include ScopeTracking
-
     module ClassMethods
       def respond_to_missing?(method, *)
         super || valid_searchlogic_scope?(method)
@@ -239,6 +237,9 @@ module ModernSearchlogic
     end
 
     included do
+      class_attribute :_dynamically_defined_searchlogic_scopes
+      self._dynamically_defined_searchlogic_scopes = {}
+
       class_attribute :searchlogic_suffix_conditions
       self.searchlogic_suffix_conditions = {}
 
