@@ -37,6 +37,20 @@ module ModernSearchlogic
           self.method(method).arity
       end
 
+      def reset_column_information
+        @searchlogic_patterns = nil
+        super
+      end
+
+      [:belongs_to, :has_one, :has_many, :has_and_belongs_to_many].each do |macro|
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          def #{macro}(...)
+            @searchlogic_patterns = nil
+            super
+          end
+        RUBY
+      end
+
       private
 
       def searchlogic_schema_ready?
@@ -50,10 +64,12 @@ module ModernSearchlogic
       end
 
       def searchlogic_suffix_condition(suffix, options = {}, &method_block)
+        ModernSearchlogic.invalidate_regex_caches!
         searchlogic_suffix_conditions[suffix] = [options, method_block]
       end
 
       def searchlogic_prefix_condition(prefix, &method_block)
+        ModernSearchlogic.invalidate_regex_caches!
         searchlogic_prefix_conditions[prefix] = method_block
       end
 
@@ -101,8 +117,7 @@ module ModernSearchlogic
       end
 
       def searchlogic_suffix_condition_match(method_name)
-        suffix_regexp = searchlogic_suffix_conditions.keys.join('|')
-        if (match = method_name.match(/\A(#{column_names_regexp}(?:_or_#{column_names_regexp})*)(#{suffix_regexp})\z/))
+        if (match = searchlogic_patterns[:suffix].match(method_name))
           _options, method_block = searchlogic_suffix_conditions.fetch(match[2])
           column_names = match[1].split('_or_')
 
@@ -122,8 +137,8 @@ module ModernSearchlogic
       end
 
       def searchlogic_prefix_match(method_name)
-        prefix_regexp = searchlogic_prefix_conditions.keys.join('|')
-        if (match = method_name.match(/\A(#{prefix_regexp})(#{column_names_regexp})\z/))
+        patterns = searchlogic_patterns
+        if (match = patterns[:prefix_column].match(method_name))
           method_block = searchlogic_prefix_conditions.fetch(match[1])
 
           arity = calculate_arity(method_block)
@@ -135,16 +150,17 @@ module ModernSearchlogic
               instance_exec(match[2], *args, &method_block)
             end
           }
-        elsif (match = method_name.match(/\A(#{prefix_regexp})(#{association_names_regexp})_(\S+)\z/))
+        elsif (match = patterns[:prefix_association].match(method_name))
           prefix, association_name, rest = match.to_a.drop(1)
 
-          searchlogic_association_finder_method(association_by_name.fetch(association_name.to_sym), prefix + rest)
+          searchlogic_association_finder_method(patterns[:associations].fetch(association_name.to_sym), prefix + rest)
         end
       end
 
       def searchlogic_association_suffix_match(method_name)
-        if (match = method_name.match(/\A(#{association_names_regexp})_(\S+)\z/))
-          searchlogic_association_finder_method(association_by_name.fetch(match[1].to_sym), match[2])
+        patterns = searchlogic_patterns
+        if (match = patterns[:association].match(method_name))
+          searchlogic_association_finder_method(patterns[:associations].fetch(match[1].to_sym), match[2])
         end
       end
 
@@ -186,6 +202,28 @@ module ModernSearchlogic
 
       def association_names_regexp
         association_by_name.keys.join('|')
+      end
+
+      def searchlogic_patterns
+        cached = @searchlogic_patterns
+        return cached.last if cached && cached.first == ModernSearchlogic.regex_cache_version
+
+        columns = column_names_regexp
+        prefixes = searchlogic_prefix_conditions.keys.join('|')
+        suffixes = searchlogic_suffix_conditions.keys.join('|')
+        associations = association_by_name
+        association_names = associations.keys.join('|')
+
+        patterns = {
+          suffix: /\A(#{columns}(?:_or_#{columns})*)(#{suffixes})\z/,
+          prefix_column: /\A(#{prefixes})(#{columns})\z/,
+          prefix_association: /\A(#{prefixes})(#{association_names})_(\S+)\z/,
+          association: /\A(#{association_names})_(\S+)\z/,
+          associations: associations,
+        }.freeze
+
+        @searchlogic_patterns = [ModernSearchlogic.regex_cache_version, patterns].freeze
+        patterns
       end
 
       def searchlogic_column_condition_method_block(method)
